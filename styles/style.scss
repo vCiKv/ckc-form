@@ -1,0 +1,100 @@
+@import 'normalize.scss';
+@import 'base.scss';
+@import 'font.scss';
+@import 'typography.scss';
+@import "~bootstrap/scss/bootstrap";
+
+body{
+  background: color(bg);
+  color:color(text);
+  min-height: 100vh;
+  font-family: $text-font;
+}
+.remove-input-arrow{
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  &[type=number] {
+    -moz-appearance: textfield;
+  }
+}
+.rdrCalendarWrapper{
+  min-width:300px;
+  width:90%;
+  font-size:15px;
+  border-radius: 12px;
+  .rdrMonth{
+    width:100%!important;
+    font-family: sans-serif;
+  }
+  @media screen and (min-width:350px){
+    .rdrMonthPicker, .rdrYearPicker {
+      margin:0;
+    }
+  }
+}
+section{
+  // @include space-section;
+  // padding: 25px 40px;
+  // &:nth-child(even){
+  //   background-color: color(bg-alt);
+  // }
+  // &:nth-child(odd){
+  //   background-color: color(bg);
+  // }
+}
+
+.container {
+    // width:80%;
+    // margin:0 auto;
+}
+.button{
+    text-align: center;
+    padding:10px 15px;
+    color: color(mid);
+    font-weight:600;
+    background-color: transparent;
+    border:1px solid color(mid);
+    border-radius:10px;
+    &:hover{
+      color: color(low);
+      background-color: color(mid);
+
+    }
+    &.rounded{
+      border-radius:30px;
+    }
+    &.primary{
+      color: color(bg);
+      background-color: color(primary);
+      border:1px solid color(primary);
+
+      &:hover{
+        background-color: color(bg);
+        color:color(primary);
+      }
+    }
+    
+}
+footer{
+  @include space-section;
+  display:block;
+  background-color:color(bg-alt);
+  min-height:500px;
+  padding: 20px;
+}
+//helpers
+.text-primary{
+  color:color(primary)
+}
+.text-low{
+  color:color(low)
+}
+.text-accent{
+  color:color(accent)
+}
+.text-secondary{
+  color:color(secondary)
+}

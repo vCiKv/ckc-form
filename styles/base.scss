@@ -1,0 +1,48 @@
+@use 'sass:map';
+$text-font:'Poppins', sans-serif;
+$nav-height:60px;
+$section-space:80px;
+$screen:(
+    small:600px,
+);
+$color:(
+    light:(
+        1:#FBF5F3,
+        2:#F6FBF4,
+        3:#7DAA92,
+    ),
+    dark:(
+        1:#000022,
+        2:#250001,
+        3:#484349
+    ),
+    main:(
+        1:#E28413,
+        2:#C42847,
+        3:#DE3C4B
+    )
+);
+@function get-color($base, $num){
+    @return map.get($color,$base,$num);
+}
+$app:(
+    primary: get-color(main,1),
+    secondary: get-color(main,2),
+    accent: get-color(main,3),
+    bg:get-color(light,1),
+    bg-alt:get-color(light,2),
+    text:get-color(dark,1),
+    high:get-color(dark,1),
+    mid:get-color(dark,3),
+    low:get-color(light,1),
+    navigation: get-color(main,3),
+
+);
+
+
+@function color($base){
+    @return map.get($app,$base);
+}
+@mixin space-section{
+    margin-top:$section-space
+}

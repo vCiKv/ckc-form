@@ -1,0 +1,38 @@
+h1,h2,h3,h4,h5,h6,p {
+    font-size: clamp(var(--min), var(--val), var(--max));
+  }
+  h1 {
+    --min: 2.2em; 
+    --val: 6vw; 
+    --max: 3.2em;
+  }
+  h2 {
+    --min: 1.7em;
+    --val: 5vw; 
+    --max: 2.45em;
+  }
+  h3 {
+      --min: 1.5em;
+      --val: 4vw; 
+      --max: 2.25em;
+  }
+  h4 {
+  --min: 1.3em;
+  --val: 3vw; 
+  --max: 1.95em;
+  }
+  h5 {
+  --min: 1.5em;
+  --val: 4vw; 
+  --max: 2.25em;
+  }
+  h6 {
+  --min: 1.5em;
+  --val: 4vw; 
+  --max: 2.25em;
+  }
+  p {
+    --min: 1em; 
+    --val: 2.5vw;
+    --max: 1.5em;
+  }
