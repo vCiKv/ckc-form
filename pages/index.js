@@ -116,9 +116,9 @@ export default function Home() {
     email: Yup.string().required('please fill your E-mail').email('please use a valid E-mail').trim().lowercase(),
     phone: Yup.string().required('please fill your phone number').min(6,'invalid phone number').matches(/^[\d()+-]+$/,'invalid phone number').trim(),
     gender: Yup.string().required('please input your gender').oneOf(['M','F'], 'invalid input'),
-    homeAddress: Yup.string().required('please fill your home address').min(2,'the name is too short').max(130,'please shorten the information').matches(/^[A-Za-z\d()-,.]+$/,'invalid address').trim(),
+    homeAddress: Yup.string().required('please fill your home address').min(2,'the name is too short').max(130,'please shorten the information').matches(/^[A-Za-z\s\d()-,.]+$/,'invalid address').trim(),
     NextOfKin: Yup.string().required('please fill a Next of Kin').min(2,'please fill more details').max(50,'please reduce the details').matches(/^[A-Za-z()-]+$/,'invalid character').trim().lowercase(),
-    workAddress: Yup.string().required('please fill your work address').min(2,'please fill more details').max(130,'please shorten the information').matches(/^[A-Za-z\d()-,.]+$/,'invalid address').trim(),
+    workAddress: Yup.string().required('please fill your work address').min(2,'please fill more details').max(130,'please shorten the information').matches(/^[A-Za-z\s\d()-,.]+$/,'invalid address').trim(),
     profession: Yup.string().required('please fill your current profession').min(2,'please fill more details').max(45,'please reduce the details').matches(/^[A-Za-z\d]+$/,'invalid character').trim().lowercase(),
     monthlyContribution: Yup.number().required('please fill an amount').positive('invalid number').integer('invalid number').moreThan(500,'amount is too low'),
     passport: Yup.mixed().required('upload a passport photograph')
