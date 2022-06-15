@@ -352,7 +352,7 @@ export default function Home() {
             />
             <strong className="me-auto">Bootstrap</strong>
           </Toast.Header>
-          <Toast.Body>Woohoo, you're reading this text in a Toast!</Toast.Body>
+          <Toast.Body>reading this text in a Toast!</Toast.Body>
         </Toast>
     </main>
   )
