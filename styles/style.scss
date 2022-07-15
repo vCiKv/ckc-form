@@ -10,6 +10,46 @@ body{
   min-height: 100vh;
   font-family: $text-font;
 }
+
+.form{
+  h1{
+    font-size: 3.5em;    
+  }
+  .circles{
+    position: relative;
+    bottom:0;
+    right:100%;
+    .c1{
+      width:270px;
+      height:270px;
+      display:block;
+      border:7px solid color(primary);
+      border-radius: 50%;
+    }
+  }
+  .form-title{
+    .image-container{
+      width:250px;
+      height:250px;
+      display:block;
+      margin:0 auto;
+  
+    }
+    color:color(primary);
+    font-weight: 600;
+
+  }
+  label{
+    color:color(primary);
+    font-weight: 500;
+  }
+  .btn-primary{
+    background-color: color(primary);
+    width:70%;
+    display:block;
+    margin:0 auto;
+  }
+}
 .remove-input-arrow{
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
@@ -22,7 +62,7 @@ body{
 }
 .rdrCalendarWrapper{
   min-width:300px;
-  width:90%;
+  width:100%;
   font-size:15px;
   border-radius: 12px;
   .rdrMonth{
@@ -51,7 +91,7 @@ section{
     // margin:0 auto;
 }
 .button{
-    text-align: center;
+    has-text-align: center;
     padding:10px 15px;
     color: color(mid);
     font-weight:600;
@@ -86,15 +126,15 @@ footer{
   padding: 20px;
 }
 //helpers
-.text-primary{
+.has-text-primary{
   color:color(primary)
 }
-.text-low{
+.has-text-low{
   color:color(low)
 }
-.text-accent{
+.has-text-accent{
   color:color(accent)
 }
-.text-secondary{
+.has-text-secondary{
   color:color(secondary)
 }
