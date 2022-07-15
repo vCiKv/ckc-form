@@ -1,4 +1,5 @@
 import {useState} from 'react'
+import Head from 'next/head'
 import {Formik} from 'formik'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
@@ -14,7 +15,6 @@ import { collection, addDoc } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
 
 import * as Yup from 'yup'
-import dayjs from 'dayjs'
 
 import { Calendar } from 'react-date-range'
 import 'react-date-range/dist/styles.css'
@@ -198,6 +198,10 @@ export default function Home() {
   //remove number
   return (
     <main>
+      <Head>
+        <title>Unique Set CKC &apos;86</title>
+        <meta name="theme-color" content="#0001fc"></meta>
+      </Head>
       <section>
         <div className="container">
           <Formik
