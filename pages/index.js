@@ -1,4 +1,4 @@
-import {useState,useRef} from 'react'
+import {useState} from 'react'
 import {Formik} from 'formik'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
@@ -7,7 +7,6 @@ import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Toast from 'react-bootstrap/Toast'
 import ToastContainer from 'react-bootstrap/ToastContainer'
-
 
 import {storage,dbStore} from '../components/firebase'
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
@@ -44,29 +43,47 @@ export default function Home() {
       </ToastContainer>
     )
   }
-  const errors = {
+  const customFormError = {
     size:'file is too large',
     type:'file is not valid',
     image:'problem uploading image',
-    error:'problem submitting form'
+    error:'problem submitting form',
+    invalidText:'invalid character',
+    invalidAddress:'invalid address',
   }
+  const missingError=(field,prefix = "your")=>{
+    return `please fill ${prefix} ${field}`
+  }
+  const lengthError=(field,isShort = true)=>{
+    return `your ${field} is too ${isShort?'short':'long'}`
+  }
+  const regEx = {
+    names:/^[A-Za-z()-]+$/,
+    digits:/^[\d()+-]+$/,
+    address:/^[A-Za-z\s\d()-,.]+$/,
+    profession:/^[A-Za-z\d]+$/,
+  } 
   //neo4j
   //mDZrZLxnBlZKinMlNvrXgql1QKlMCM9QVHmpsxo_QQQ
   // const validateValues = (values)=>{
   //   const {passport} = values
   //   if(!passport){
-  //     addMessage(errors.type)
+  //     addMessage(customFormError.type)
   //     return
   //   }
   //   if(!passport.type.includes('image/')){
-  //     addMessage(errors.type)
+  //     addMessage(customFormError.type)
   //     return
   //   }
   //   if(passport.size > (3 * 1048576)){
-  //     addMessage(errors.size)
+  //     addMessage(customFormError.size)
   //     return
   //   }
   // }
+  const isDividedBy1000 = (num)=>{
+    if(num < 1000 || isNaN(1000)) return false
+    return(num%1000===0)?true:false
+  }
   const submitForm= async (values)=>{
     if(isLoading){
       return
@@ -74,16 +91,15 @@ export default function Home() {
     setLoading(true)
     const {passport} = values
     if(!passport){
-      addMessage(errors.type)
-
+      addMessage(customFormError.type)
       return
     }
     if(!passport.type.includes('image/')){
-      addMessage(errors.type)
+      addMessage(customFormError.type)
       return
     }
     if(passport.size > (3 * 1048576)){
-      addMessage(errors.size)
+      addMessage(customFormError.size)
       return
     }
     //confirm date
@@ -97,31 +113,86 @@ export default function Home() {
           addMessage('successfully submitted')
         })
         .catch((e)=>{
-          addMessage(errors.error)
+          addMessage(customFormError.error)
           console.error('form',e)
         })
       })
     })
     .catch((e)=>{
-      addMessage(errors.image)
+      addMessage(customFormError.image)
       console.error('image',e)
-  
     })
-    setLoading(false)
+    .then(()=>setLoading(false))
+    
   }
   const schema = Yup.object().shape({
-    firstName: Yup.string().required('please fill your first name').min(2,'your name is too short').max(30,'your name is too long').matches(/^[A-Za-z()-]+$/,'invalid character').trim().lowercase(),
-    lastName: Yup.string().required('please fill your last name').min(2,'your name is too short').max(30,'your name is too long').matches(/^[A-Za-z()-]+$/,'invalid character').trim().lowercase(),
-    middleName: Yup.string().min(2,'your name is too short').max(30,'your name is too long').matches(/^[A-Za-z()-]+$/,'invalid character').trim().lowercase(),
-    email: Yup.string().required('please fill your E-mail').email('please use a valid E-mail').trim().lowercase(),
-    phone: Yup.string().required('please fill your phone number').min(6,'invalid phone number').matches(/^[\d()+-]+$/,'invalid phone number').trim(),
-    gender: Yup.string().required('please input your gender').oneOf(['M','F'], 'invalid input'),
-    homeAddress: Yup.string().required('please fill your home address').min(2,'the name is too short').max(130,'please shorten the information').matches(/^[A-Za-z\s\d()-,.]+$/,'invalid address').trim(),
-    NextOfKin: Yup.string().required('please fill a Next of Kin').min(2,'please fill more details').max(50,'please reduce the details').matches(/^[A-Za-z()-]+$/,'invalid character').trim().lowercase(),
-    workAddress: Yup.string().required('please fill your work address').min(2,'please fill more details').max(130,'please shorten the information').matches(/^[A-Za-z\s\d()-,.]+$/,'invalid address').trim(),
-    profession: Yup.string().required('please fill your current profession').min(2,'please fill more details').max(45,'please reduce the details').matches(/^[A-Za-z\d]+$/,'invalid character').trim().lowercase(),
-    monthlyContribution: Yup.number().required('please fill an amount').positive('invalid number').integer('invalid number').moreThan(500,'amount is too low'),
-    passport: Yup.mixed().required('upload a passport photograph')
+    firstName: Yup.string()
+      .required(missingError('first name')).min(2,lengthError('name'))
+      .max(30,lengthError('name',false))
+      .matches(regEx.names,customFormError.invalidText)
+      .trim()
+      .lowercase(),
+    lastName: Yup.string()
+      .required(missingError('last name'))
+      .min(2,lengthError('name'))
+      .max(30,lengthError('name',false))
+      .matches(regEx.names,customFormError.invalidText)
+      .trim()
+      .lowercase(),
+    middleName: Yup.string()
+      .optional()
+      .min(2,lengthError('name'))
+      .max(30,lengthError('name',false))
+      .matches(regEx.names,customFormError.invalidText)
+      .trim()
+      .lowercase(),
+    email: Yup.string()
+      .required(missingError('E-mail'))
+      .email('please use a valid E-mail')
+      .trim()
+      .lowercase(),
+    phone: Yup.string()
+      .required(missingError('phone number'))
+      .min(6,'invalid phone number')
+      .matches(regEx.digits,'invalid phone number')
+      .trim(),
+    gender: Yup.string()
+      .required(missingError('gender','a'))
+      .oneOf(['M','F'], 'invalid input'),
+    homeAddress: Yup.string()
+      .required(missingError('home address'))
+      .min(2,'the name is too short')
+      .max(130,'please shorten the information')
+      .matches(regEx.address,customFormError.invalidAddress)
+      .trim(),
+    NextOfKin: Yup.string()
+      .required(missingError('Next of Kin','a'))
+      .min(2,missingError('details','more'))
+      .max(50,'please reduce the details')
+      .matches(regEx.names,customFormError.invalidText)
+      .trim()
+      .lowercase(),
+    workAddress: Yup.string()
+      .required(missingError('work address'))
+      .min(2,missingError('details','more'))
+      .max(130,'please shorten the information')
+      .matches(regEx.address,customFormError.invalidAddress)
+      .trim(),
+    profession: Yup.string()
+      .required(missingError('current profession'))
+      .min(2,missingError('details','more'))
+      .max(45,'please reduce the details')
+      .matches(regEx.profession,customFormError.invalidText)
+      .trim()
+      .lowercase(),
+    monthlyContribution: Yup.number()
+      .required(missingError('amount','an'))
+      .positive('invalid number')
+      .integer('invalid number')
+      .moreThan(999,'amount is too low')
+      .test('isDividedBy1000','amount must be divisible by 1000',(value)=>isDividedBy1000(value)),
+    passport: Yup.mixed()
+      .required('upload a passport photograph')
   })
 
   //remove number
@@ -155,8 +226,20 @@ export default function Home() {
               errors,
               setFieldValue
             }) => (
-              <Form noValidate className="mx-2 p-1">
-                <h1 className="display-2 text-center my-4">CKC Form</h1>
+              <Form noValidate className="mx-2 p-1 form">
+                <div className="text-center my-4 form-title" >
+                  <div className="image-container">
+                    <img
+                      alt="ckc"
+                      src="/logo.png"
+                      width="100%"
+                      height="100%"
+                    />
+                  </div>
+                  <h1 >Unique Set CKC &apos;86</h1>
+                  <h3 className="has-text-secondary">Multipurpose Co-Operative Society Limited</h3>
+                </div>
+
                 {/*names*/}
                 <Row className="mb-3">
                   <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikFirstName">
@@ -217,8 +300,8 @@ export default function Home() {
                         aria-describedby="inputGroupPrepend"
                         value={values.email}
                         onChange={handleChange}
-                        isValid={touched.email && !errors.email}
-                        isInvalid={errors.email}
+                        isValid={touched.email && !customFormError.email}
+                        isInvalid={customFormError.email}
                         required
                       />
                       <Form.Control.Feedback type="invalid">
@@ -360,7 +443,7 @@ export default function Home() {
                           isValid={touched.monthlyContribution && !errors.monthlyContribution}
                           isInvalid={errors.monthlyContribution}
                           required
-                          step="50"
+                          step="1000"
                         /> 
                         <Form.Control.Feedback type="invalid">
                           {errors.monthlyContribution}
@@ -388,13 +471,19 @@ export default function Home() {
                   </Form.Group>
                 </Row>
                 {/* <Button type="submit" size='lg' disabled={isLoading} onClick={()=>submitForm(values)}>{isLoading?'Loading...':'Submit form'}</Button> */}
-                <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit form'}</Button>
-              
+                <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
+               
               </Form>
             )}
           </Formik>
           <DisplayToast/>
         </div>
+        <div className="circles">
+          <div className="c1"></div>
+        </div>
+        <img
+          src="/waves.svg"
+        />
       </section>
      
     </main>
