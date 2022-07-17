@@ -10,7 +10,20 @@ body{
   min-height: 100vh;
   font-family: $text-font;
 }
-
+.toast{
+  .toast-header{
+    background:color(primary);
+    color:white;
+    .btn-color{
+      color:white;
+    }
+  }
+  .toast-body{
+    background:white;
+    color:color(primary);
+    font-size:24px;
+  }
+}
 .form{
   h1{
     font-size: 3.5em;    

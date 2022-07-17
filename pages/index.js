@@ -34,11 +34,13 @@ export default function Home() {
   const DisplayToast =()=>{
     return(
       <ToastContainer className="position-fixed bottom-0 start-50 translate-middle-x" position="bottom-center">
-      <Toast bg="secondary" show={toastData.show} onClose={closeToast} position="bottom-center" delay={4500} autohide>
+      <Toast bg="secondary" show={toastData.show} onClose={closeToast} position="bottom-center" delay={5500} autohide>
         <Toast.Header>
           <strong className="me-auto"></strong>
         </Toast.Header>
+        {/* <Toast.Body className="text-center">{toastData.message}</Toast.Body> */}
         <Toast.Body className="text-center">{toastData.message}</Toast.Body>
+
       </Toast>
       </ToastContainer>
     )
@@ -59,32 +61,27 @@ export default function Home() {
   }
   const regEx = {
     names:/^[A-Za-z()-]+$/,
+    fullName:/^[A-Za-z()-\s]+$/,
     digits:/^[\d()+-]+$/,
     address:/^[A-Za-z\s\d()-,.]+$/,
     profession:/^[A-Za-z\d]+$/,
   } 
   //neo4j
   //mDZrZLxnBlZKinMlNvrXgql1QKlMCM9QVHmpsxo_QQQ
-  // const validateValues = (values)=>{
-  //   const {passport} = values
-  //   if(!passport){
-  //     addMessage(customFormError.type)
-  //     return
-  //   }
-  //   if(!passport.type.includes('image/')){
-  //     addMessage(customFormError.type)
-  //     return
-  //   }
-  //   if(passport.size > (3 * 1048576)){
-  //     addMessage(customFormError.size)
-  //     return
-  //   }
-  // }
   const isDividedBy1000 = (num)=>{
     if(num < 1000 || isNaN(1000)) return false
     return(num%1000===0)?true:false
   }
-  const submitForm= async (values)=>{
+  // const getImageUrl = async (ref)=>{
+  //   await getDownloadURL(ref)
+  //   .then((url)=>{
+  //     return url
+  //   })
+  //   .catch(()=>{
+  //     return false
+  //   })
+  // }
+  const submitForm = async (values)=>{
     if(isLoading){
       return
     }
@@ -102,28 +99,26 @@ export default function Home() {
       addMessage(customFormError.size)
       return
     }
-    //confirm date
     const imageRef = ref(storage,`passports/${uuidv4()}-${passport.name}`)
+
     await uploadBytes(imageRef,passport)
-    .then((snapshot)=>{
-      getDownloadURL(snapshot.ref)
-      .then(async(url)=>{
-        await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url})
-        .then(()=>{
-          addMessage('successfully submitted')
-        })
-        .catch((e)=>{
-          addMessage(customFormError.error)
-          console.error('form',e)
-        })
+    .then(async(snapshot)=>{
+      const url = await getDownloadURL(snapshot.ref)
+      await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url})
+      .then(()=>{
+        addMessage('successfully submitted')
       })
+      .catch((e)=>{
+        addMessage(customFormError.error)
+        console.error('form',e)
+      })
+      
     })
     .catch((e)=>{
       addMessage(customFormError.image)
       console.error('image',e)
     })
-    .then(()=>setLoading(false))
-    
+    setLoading(false)  
   }
   const schema = Yup.object().shape({
     firstName: Yup.string()
@@ -169,7 +164,7 @@ export default function Home() {
       .required(missingError('Next of Kin','a'))
       .min(2,missingError('details','more'))
       .max(50,'please reduce the details')
-      .matches(regEx.names,customFormError.invalidText)
+      .matches(regEx.fullName,customFormError.invalidText)
       .trim()
       .lowercase(),
     workAddress: Yup.string()
@@ -240,7 +235,7 @@ export default function Home() {
                       height="100%"
                     />
                   </div>
-                  <h1 >Unique Set CKC &apos;86</h1>
+                  <h1>Unique Set CKC &apos;86</h1>
                   <h3 className="has-text-secondary">Multipurpose Co-Operative Society Limited</h3>
                 </div>
 
@@ -253,7 +248,7 @@ export default function Home() {
                       name="firstName"
                       value={values.firstName}
                       onChange={handleChange}
-                      isValid={touched.firstName && !errors.firstName}
+                      
                       isInvalid={!!errors.firstName}
                       required
                     />
@@ -281,7 +276,7 @@ export default function Home() {
                       name="lastName"
                       value={values.lastName}
                       onChange={handleChange}
-                      isValid={touched.lastName && !errors.lastName}
+                      
                       isInvalid={!!errors.lastName}
                       required
                     />
@@ -304,8 +299,8 @@ export default function Home() {
                         aria-describedby="inputGroupPrepend"
                         value={values.email}
                         onChange={handleChange}
-                        isValid={touched.email && !customFormError.email}
-                        isInvalid={customFormError.email}
+                        
+                        isInvalid={errors.email}
                         required
                       />
                       <Form.Control.Feedback type="invalid">
@@ -326,7 +321,7 @@ export default function Home() {
                       className="remove-input-arrow"
                       value={values.phone}
                       onChange={handleChange}
-                      isValid={touched.phone && !errors.phone}
+                      
                       isInvalid={errors.phone}
                       required
                     />
@@ -342,7 +337,7 @@ export default function Home() {
                       value={values.gender}
                       onChange={handleChange}
                       isInvalid={!!errors.gender}
-                      isValid={touched.gender && !errors.gender}
+                      
                       required
                     >
                       <option>select one</option>
@@ -405,7 +400,7 @@ export default function Home() {
                 {/*NextOfKin*/}
                 <Row className="mb-3">
                   <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
-                    <Form.Label>Spouse/Next of Kin</Form.Label>
+                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
                     <Form.Control
                       type="text"
                       name="NextOfKin"
@@ -444,7 +439,7 @@ export default function Home() {
                           name="monthlyContribution"
                           value={values.monthlyContribution}
                           onChange={handleChange}
-                          isValid={touched.monthlyContribution && !errors.monthlyContribution}
+                          
                           isInvalid={errors.monthlyContribution}
                           required
                           step="1000"
@@ -474,16 +469,11 @@ export default function Home() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Row>
-                {/* <Button type="submit" size='lg' disabled={isLoading} onClick={()=>submitForm(values)}>{isLoading?'Loading...':'Submit form'}</Button> */}
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
-               
               </Form>
             )}
           </Formik>
           <DisplayToast/>
-        </div>
-        <div className="circles">
-          <div className="c1"></div>
         </div>
         <img
           src="/waves.svg"
