@@ -419,28 +419,7 @@ export default function Home() {
                     required
                     addOn="@"
                     label="E-mail Address"
-                  />
-                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikEmail">
-                    <Form.Label>E-mail Address</Form.Label>
-                    <InputGroup hasValidation>
-                      <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
-                      <Form.Control
-                        type="email"
-                        name="email"
-                        placeholder="name@example.com"
-                        aria-describedby="inputGroupPrepend"
-                        value={values.email}
-                        onChange={handleChange}
-                        isInvalid={errors.email}
-                        required
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.email}
-                      </Form.Control.Feedback>
-                    </InputGroup>     
-                  
-                  </Form.Group> */}
-                
+                  />               
                 </Row>   
                 {/*gender phone*/}
                 <Row className="mb-3">
@@ -463,21 +442,6 @@ export default function Home() {
                   required
                   label="Other Phone Number(optional)"
                 />
-                  {/* <Form.Group as={Col} className="mb-1" md="9" controlId="validationFormikPhone">
-                    <Form.Label>Phone Number</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="phone"
-                      className="remove-input-arrow"
-                      value={values.phone}
-                      onChange={handleChange}
-                      isInvalid={errors.phone}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.phone}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
                   <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikGender">
                     <Form.Label>Gender</Form.Label>
                     <Form.Select 
@@ -580,38 +544,6 @@ export default function Home() {
                     step="1000"
                     addOn="₦"
                   />
-                  {/* <Form.Group as={Col} className="mb-1" md="8" controlId="validationFormikProfession">
-                    <Form.Label>Profession</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="profession"
-                      value={values.profession}
-                      onChange={handleChange}
-                      isInvalid={!!errors.profession}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.profession}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
-                  {/* <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikMonthlyContribution">
-                    <Form.Label>Monthly Contribution</Form.Label>
-                      <InputGroup hasValidation>
-                        <InputGroup.Text id="basic-addon1">₦</InputGroup.Text>
-                        <Form.Control
-                          type="number"
-                          name="monthlyContribution"
-                          value={values.monthlyContribution}
-                          onChange={handleChange}
-                          isInvalid={errors.monthlyContribution}
-                          required
-                          step="1000"
-                        /> 
-                        <Form.Control.Feedback type="invalid">
-                          {errors.monthlyContribution}
-                        </Form.Control.Feedback>
-                      </InputGroup>
-                  </Form.Group> */}
                 </Row>
                 {/* work address*/}
                 <Row className="mb-3">
@@ -625,22 +557,6 @@ export default function Home() {
                     error={errors.workAddress}
                     required
                   />
-                  {/* <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikWorkAddress">
-                    <Form.Label>Work Address</Form.Label>
-                    <Form.Control
-                      placeholder="office address"
-                      name="workAddress"
-                      as="textarea"
-                      rows={4}
-                      value={values.workAddress}
-                      onChange={handleChange}
-                      isInvalid={!!errors.workAddress}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.workAddress}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
                 </Row>
                  {/*NextOfKin*/}
                  <Row className="mb-3">
@@ -652,20 +568,6 @@ export default function Home() {
                     name="NextOfKin"
                     required
                   />
-                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
-                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="NextOfKin"
-                      value={values.NextOfKin}
-                      onChange={handleChange}
-                      isInvalid={!!errors.NextOfKin}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.NextOfKin}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
                 </Row>
                  {/*NextOfKin*/}
                  <Row className="mb-3">
@@ -676,11 +578,11 @@ export default function Home() {
                     error={errors.NextOfKinPhoneNumber} 
                     name="NextOfKinPhoneNumber"
                     required
-                    size={5}
+                    size={6}
                   />
                   <InputBootstrapAddOn
                     type="email"
-                    size={7}
+                    size={6}
                     name="NextOfKinEmail"
                     placeholder="name@example.com"
                     aria-describedby="inputGroupPrepend"
@@ -690,20 +592,6 @@ export default function Home() {
                     addOn="@"
                     label="Spouse/Next of Kin E-mail Address(optional)"
                   />
-                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
-                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="NextOfKin"
-                      value={values.NextOfKin}
-                      onChange={handleChange}
-                      isInvalid={!!errors.NextOfKin}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.NextOfKin}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
                 </Row>
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
               </Form>

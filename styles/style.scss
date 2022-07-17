@@ -92,23 +92,8 @@ body{
     }
   }
 }
-section{
-  // @include space-section;
-  // padding: 25px 40px;
-  // &:nth-child(even){
-  //   background-color: color(bg-alt);
-  // }
-  // &:nth-child(odd){
-  //   background-color: color(bg);
-  // }
-}
-
-.container {
-    // width:80%;
-    // margin:0 auto;
-}
 .button{
-    has-text-align: center;
+    text-align: center;
     padding:10px 15px;
     color: color(mid);
     font-weight:600;
