@@ -19,7 +19,8 @@ import 'react-date-range/dist/styles.css'
 import 'react-date-range/dist/theme/default.css' 
 export default function Home() {
   const toastDefault = {show:false,message:''}
-  const [dateData,setDateData] = useState(new Date(1990))
+  const dateDefault = new Date(1990,0)
+  const [dateData,setDateData] = useState(new Date(1990,0))
   const [toastData,setToastData] = useState(toastDefault)
   const [isLoading, setLoading] = useState(false);
   const closeToast = ()=>{
