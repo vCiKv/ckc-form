@@ -24,6 +24,10 @@ body{
     font-size:24px;
   }
 }
+.blobs{
+  z-index:-1;
+  position: relative;
+}
 .form{
   h1{
     font-size: 3.5em;    

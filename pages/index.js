@@ -13,15 +13,13 @@ import {storage,dbStore} from '../components/firebase'
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
 import { collection, addDoc } from 'firebase/firestore' 
 import { v4 as uuidv4 } from 'uuid'
-
 import * as Yup from 'yup'
-
 import { Calendar } from 'react-date-range'
 import 'react-date-range/dist/styles.css'
 import 'react-date-range/dist/theme/default.css' 
 export default function Home() {
   const toastDefault = {show:false,message:''}
-  const [dateData,setDateData] = useState(new Date())
+  const [dateData,setDateData] = useState(new Date(1990))
   const [toastData,setToastData] = useState(toastDefault)
   const [isLoading, setLoading] = useState(false);
   const closeToast = ()=>{
@@ -35,7 +33,7 @@ export default function Home() {
     return(
       <ToastContainer className="position-fixed bottom-0 start-50 translate-middle-x" position="bottom-center">
       <Toast bg="secondary" show={toastData.show} onClose={closeToast} position="bottom-center" delay={5500} autohide>
-        <Toast.Header>
+        <Toast.Header closeVariant="white">
           <strong className="me-auto"></strong>
         </Toast.Header>
         {/* <Toast.Body className="text-center">{toastData.message}</Toast.Body> */}
@@ -43,6 +41,89 @@ export default function Home() {
 
       </Toast>
       </ToastContainer>
+    )
+  }
+  const InputBootstrap = ({name,label,type="text",required=false,onChange,value,error,size=12,...props})=>{
+    return(
+      <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
+        <Form.Label>{label}</Form.Label>
+        <Form.Control
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          isInvalid={!!error}
+          required={required}
+          {...props}
+        />
+        <Form.Control.Feedback type="invalid">
+          {error}
+        </Form.Control.Feedback>
+      </Form.Group>
+    )
+  }
+  const InputBootstrapAddOn = ({name,label,type="text",required=false,onChange,value,error,size=12,addOn,...props})=>{
+    return(
+      <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
+        <Form.Label>{label}</Form.Label>
+          <InputGroup hasValidation>
+            <InputGroup.Text id="basic-addon1">{addOn}</InputGroup.Text>
+            <Form.Control
+              type={type}
+              name={name}
+              value={value}
+              onChange={onChange}
+              isInvalid={error}
+              required={required}
+              {...props}
+            /> 
+            <Form.Control.Feedback type="invalid">
+              {error}
+            </Form.Control.Feedback>
+          </InputGroup>
+      </Form.Group>
+    )
+  }
+  const Blobs = ()=>{
+    const blobPos = [
+      {
+        bottom:50,
+        left:10,
+        size:90
+      },
+      {
+        bottom:51,
+        left:90,
+        size:20
+      },
+      {
+        bottom:90,
+        left:19,
+        size:140
+      },
+    ]
+    return(
+      <div className="blobs">
+        {
+          blobPos.map((blob,index)=>(
+            <div key={index} className="blob-container"
+              style={{
+                position:'absolute',
+                bottom:blob.bottom+'%',
+                left:blob.left+'%'
+              }}
+            >
+              <img
+                src={`/blob${index+1}.svg`}
+                alt=''
+                width={blob.size+'px'}
+                height={blob.size+'px'}
+              
+              />
+            </div>
+          ))
+        }
+      </div>
     )
   }
   const customFormError = {
@@ -100,7 +181,6 @@ export default function Home() {
       return
     }
     const imageRef = ref(storage,`passports/${uuidv4()}-${passport.name}`)
-
     await uploadBytes(imageRef,passport)
     .then(async(snapshot)=>{
       const url = await getDownloadURL(snapshot.ref)
@@ -149,15 +229,18 @@ export default function Home() {
     phone: Yup.string()
       .required(missingError('phone number'))
       .min(6,'invalid phone number')
-      .matches(regEx.digits,'invalid phone number')
-      .trim(),
+      .matches(regEx.digits,'invalid phone number'),
+    otherPhone: Yup.string()
+      .optional()
+      .min(6,'invalid phone number')
+      .matches(regEx.digits,'invalid phone number'),
     gender: Yup.string()
       .required(missingError('gender','a'))
       .oneOf(['M','F'], 'invalid input'),
     homeAddress: Yup.string()
       .required(missingError('home address'))
       .min(2,'the name is too short')
-      .max(130,'please shorten the information')
+      .max(130,'please reduce the details')
       .matches(regEx.address,customFormError.invalidAddress)
       .trim(),
     NextOfKin: Yup.string()
@@ -167,10 +250,19 @@ export default function Home() {
       .matches(regEx.fullName,customFormError.invalidText)
       .trim()
       .lowercase(),
+    NextOfKinEmail: Yup.string()
+      .optional()
+      .email('please use a valid E-mail')
+      .trim()
+      .lowercase(),
+    NextOfKinPhoneNumber: Yup.string()
+      .required(missingError('phone number','your spouse/next of kin\'s'))
+      .min(6,'invalid phone number')
+      .matches(regEx.digits,'invalid phone number'),
     workAddress: Yup.string()
       .required(missingError('work address'))
       .min(2,missingError('details','more'))
-      .max(130,'please shorten the information')
+      .max(130,'please reduce the details')
       .matches(regEx.address,customFormError.invalidAddress)
       .trim(),
     profession: Yup.string()
@@ -199,6 +291,7 @@ export default function Home() {
       </Head>
       <section>
         <div className="container">
+        {/* <Blobs/> */}
           <Formik
             validationSchema={schema}
             onSubmit={submitForm}
@@ -208,9 +301,12 @@ export default function Home() {
               middleName: '',
               email: '',
               phone: '',
+              otherPhone:'',
               gender:'',
               homeAddress: '',
               NextOfKin: '',
+              NextOfKinPhoneNumber: '',
+              NextOfKinEmail: '',
               workAddress: '',
               profession:'',
               monthlyContribution: '',
@@ -241,14 +337,39 @@ export default function Home() {
 
                 {/*names*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikFirstName">
+                  <InputBootstrap 
+                    size={4}
+                    name="firstName"
+                    value={values.firstName}
+                    onChange={handleChange}
+                    error={errors.firstName}
+                    required
+                    label="First Name"
+                  />
+                  <InputBootstrap 
+                    size={4}
+                    name="middleName"
+                    value={values.middleName}
+                    onChange={handleChange}
+                    error={!!errors.middleName}
+                    label="Middle Name(optional)"
+                  />
+                  <InputBootstrap 
+                    size={4}
+                    name="lastName"
+                    value={values.lastName}
+                    onChange={handleChange}
+                    error={errors.lastName}
+                    required
+                    label="Last Name(Surname)"
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikFirstName">
                     <Form.Label>First name</Form.Label>
                     <Form.Control
                       type="text"
                       name="firstName"
                       value={values.firstName}
                       onChange={handleChange}
-                      
                       isInvalid={!!errors.firstName}
                       required
                     />
@@ -276,19 +397,30 @@ export default function Home() {
                       name="lastName"
                       value={values.lastName}
                       onChange={handleChange}
-                      
                       isInvalid={!!errors.lastName}
                       required
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.lastName}
                     </Form.Control.Feedback>
-                  </Form.Group>
+                  </Form.Group> */}
                   
                 </Row>
                 {/*email address*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikEmail">
+                  <InputBootstrapAddOn
+                    type="email"
+                    name="email"
+                    placeholder="name@example.com"
+                    aria-describedby="inputGroupPrepend"
+                    value={values.email}
+                    onChange={handleChange}
+                    error={errors.email}
+                    required
+                    addOn="@"
+                    label="E-mail Address"
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikEmail">
                     <Form.Label>E-mail Address</Form.Label>
                     <InputGroup hasValidation>
                       <InputGroup.Text id="basic-addon1">@</InputGroup.Text>
@@ -299,7 +431,6 @@ export default function Home() {
                         aria-describedby="inputGroupPrepend"
                         value={values.email}
                         onChange={handleChange}
-                        
                         isInvalid={errors.email}
                         required
                       />
@@ -308,12 +439,31 @@ export default function Home() {
                       </Form.Control.Feedback>
                     </InputGroup>     
                   
-                  </Form.Group>
+                  </Form.Group> */}
                 
                 </Row>   
                 {/*gender phone*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="9" controlId="validationFormikPhone">
+                  <InputBootstrap 
+                    name="phone"
+                    value={values.phone}
+                    onChange={handleChange}
+                    error={errors.phone}
+                    required
+                    label="Phone Number"
+                  />
+                </Row>
+                <Row className="mb-3">
+                <InputBootstrap 
+                  size={8}
+                  name="otherPhone"
+                  value={values.otherPhone}
+                  onChange={handleChange}
+                  error={errors.otherPhone}
+                  required
+                  label="Other Phone Number(optional)"
+                />
+                  {/* <Form.Group as={Col} className="mb-1" md="9" controlId="validationFormikPhone">
                     <Form.Label>Phone Number</Form.Label>
                     <Form.Control
                       type="text"
@@ -321,15 +471,14 @@ export default function Home() {
                       className="remove-input-arrow"
                       value={values.phone}
                       onChange={handleChange}
-                      
                       isInvalid={errors.phone}
                       required
                     />
                     <Form.Control.Feedback type="invalid">
                       {errors.phone}
                     </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-1" md="3" controlId="validationFormikGender">
+                  </Form.Group> */}
+                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikGender">
                     <Form.Label>Gender</Form.Label>
                     <Form.Select 
                       aria-label="Default select example"
@@ -337,7 +486,6 @@ export default function Home() {
                       value={values.gender}
                       onChange={handleChange}
                       isInvalid={!!errors.gender}
-                      
                       required
                     >
                       <option>select one</option>
@@ -361,7 +509,18 @@ export default function Home() {
                 </Row>
                 {/*HOME address*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikHomeAddress">
+                  <InputBootstrap 
+                    label="Address"
+                    placeholder="home address"
+                    name="homeAddress"
+                    as="textarea"
+                    rows={4}
+                    value={values.homeAddress}
+                    onChange={handleChange}
+                    error={errors.homeAddress}
+                    required
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikHomeAddress">
                     <Form.Label>Address</Form.Label>
                     <Form.Control
                       placeholder="home address"
@@ -376,7 +535,7 @@ export default function Home() {
                     <Form.Control.Feedback type="invalid">
                       {errors.homeAddress}
                     </Form.Control.Feedback>
-                  </Form.Group>
+                  </Form.Group> */}
                 </Row>
                 {/*passport*/}
                 <Row className="mb-3">
@@ -397,26 +556,31 @@ export default function Home() {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Row>
-                {/*NextOfKin*/}
-                <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
-                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="NextOfKin"
-                      value={values.NextOfKin}
-                      onChange={handleChange}
-                      isInvalid={!!errors.NextOfKin}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.NextOfKin}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
+               
                 {/* profession//expected monthly contribution*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="8" controlId="validationFormikProfession">
+                  <InputBootstrap 
+                    size={8}
+                    value={values.profession}
+                    onChange={handleChange}
+                    error={errors.profession}
+                    required
+                    label="Profession"
+                    name="profession"
+                  />
+                  <InputBootstrapAddOn
+                    size={4}
+                    type="number"
+                    name="monthlyContribution"
+                    label="Monthly Contribution"
+                    value={values.monthlyContribution}
+                    onChange={handleChange}
+                    error={errors.monthlyContribution}
+                    required
+                    step="1000"
+                    addOn="₦"
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="8" controlId="validationFormikProfession">
                     <Form.Label>Profession</Form.Label>
                     <Form.Control
                       type="text"
@@ -429,8 +593,8 @@ export default function Home() {
                     <Form.Control.Feedback type="invalid">
                       {errors.profession}
                     </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikMonthlyContribution">
+                  </Form.Group> */}
+                  {/* <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikMonthlyContribution">
                     <Form.Label>Monthly Contribution</Form.Label>
                       <InputGroup hasValidation>
                         <InputGroup.Text id="basic-addon1">₦</InputGroup.Text>
@@ -439,7 +603,6 @@ export default function Home() {
                           name="monthlyContribution"
                           value={values.monthlyContribution}
                           onChange={handleChange}
-                          
                           isInvalid={errors.monthlyContribution}
                           required
                           step="1000"
@@ -447,12 +610,22 @@ export default function Home() {
                         <Form.Control.Feedback type="invalid">
                           {errors.monthlyContribution}
                         </Form.Control.Feedback>
-                        </InputGroup>
-                  </Form.Group>
+                      </InputGroup>
+                  </Form.Group> */}
                 </Row>
                 {/* work address*/}
                 <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikWorkAddress">
+                  <InputBootstrap 
+                    label="Work Address" 
+                    name="workAddress"
+                    as="textarea"
+                    rows={4}
+                    value={values.workAddress}
+                    onChange={handleChange}
+                    error={errors.workAddress}
+                    required
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikWorkAddress">
                     <Form.Label>Work Address</Form.Label>
                     <Form.Control
                       placeholder="office address"
@@ -467,7 +640,70 @@ export default function Home() {
                     <Form.Control.Feedback type="invalid">
                       {errors.workAddress}
                     </Form.Control.Feedback>
-                  </Form.Group>
+                  </Form.Group> */}
+                </Row>
+                 {/*NextOfKin*/}
+                 <Row className="mb-3">
+                  <InputBootstrap 
+                    label="Spouse/Next of Kin(Full Name)"
+                    value={values.NextOfKin}
+                    onChange={handleChange}
+                    error={errors.NextOfKin}
+                    name="NextOfKin"
+                    required
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
+                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="NextOfKin"
+                      value={values.NextOfKin}
+                      onChange={handleChange}
+                      isInvalid={!!errors.NextOfKin}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.NextOfKin}
+                    </Form.Control.Feedback>
+                  </Form.Group> */}
+                </Row>
+                 {/*NextOfKin*/}
+                 <Row className="mb-3">
+                  <InputBootstrap 
+                    label="Spouse/Next of Kin Phone Number"
+                    value={values.NextOfKinPhoneNumber}
+                    onChange={handleChange}
+                    error={errors.NextOfKinPhoneNumber} 
+                    name="NextOfKinPhoneNumber"
+                    required
+                    size={5}
+                  />
+                  <InputBootstrapAddOn
+                    type="email"
+                    size={7}
+                    name="NextOfKinEmail"
+                    placeholder="name@example.com"
+                    aria-describedby="inputGroupPrepend"
+                    value={values.NextOfKinEmail}
+                    onChange={handleChange}
+                    error={errors.NextOfKinEmail}
+                    addOn="@"
+                    label="Spouse/Next of Kin E-mail Address(optional)"
+                  />
+                  {/* <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikNextOfKin">
+                    <Form.Label>Spouse/Next of Kin(Full Name)</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="NextOfKin"
+                      value={values.NextOfKin}
+                      onChange={handleChange}
+                      isInvalid={!!errors.NextOfKin}
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {errors.NextOfKin}
+                    </Form.Control.Feedback>
+                  </Form.Group> */}
                 </Row>
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
               </Form>
