@@ -42,7 +42,6 @@ const Dashboard = ({user})=>{
             snapshot.forEach((snap)=>{
                 peopleArray.push({id:snap.id,...snap.data()})
             })
-            console.log(peopleArray.map(person=>person.monthlyContribution))
             setPeopleList(peopleArray)
         }
         getPeopleList()
@@ -200,6 +199,12 @@ export default function Admin(){
         getUser()
     },[])
     return(
-        <section>{( !user )? <SignIn isLoading={isLoading} submit={submitForm}/> : <Dashboard user={user}/>}<img className="bottom-waves" src="/waves.svg"/></section>
+        <main>
+            <Head>
+            <title>Unique Set CKC &apos;86</title>
+            <meta name="theme-color" content="#0001fc"></meta>
+            </Head>
+            <section>{( !user )? <SignIn isLoading={isLoading} submit={submitForm}/> : <Dashboard user={user}/>}<img className="bottom-waves" src="/waves.svg"/></section>
+        </main>
     )
 }

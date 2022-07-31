@@ -45,48 +45,6 @@ export default function Home() {
     )
   }
  
-  const Blobs = ()=>{
-    const blobPos = [
-      {
-        bottom:50,
-        left:10,
-        size:90
-      },
-      {
-        bottom:51,
-        left:90,
-        size:20
-      },
-      {
-        bottom:90,
-        left:19,
-        size:140
-      },
-    ]
-    return(
-      <div className="blobs">
-        {
-          blobPos.map((blob,index)=>(
-            <div key={index} className="blob-container"
-              style={{
-                position:'absolute',
-                bottom:blob.bottom+'%',
-                left:blob.left+'%'
-              }}
-            >
-              <img
-                src={`/blob${index+1}.svg`}
-                alt=''
-                width={blob.size+'px'}
-                height={blob.size+'px'}
-              
-              />
-            </div>
-          ))
-        }
-      </div>
-    )
-  }
   const customFormError = {
     size:'file is too large',
     type:'file is not valid',
