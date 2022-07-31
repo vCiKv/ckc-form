@@ -1,5 +1,6 @@
 import {useState,useEffect} from 'react'
 import {useRouter} from 'next/router' 
+import Head from 'next/head'
 import * as Yup from 'yup'
 import dayjs from 'dayjs'
 import {InputBootstrap,missingError} from '../components/inputs'
