@@ -11,7 +11,7 @@ import ToastContainer from 'react-bootstrap/ToastContainer'
 import {InputBootstrap,InputBootstrapAddOn,missingError,lengthError,regEx} from '../components/inputs'
 import {storage,dbStore} from '../components/firebase'
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
-import { collection, addDoc } from 'firebase/firestore' 
+import { collection, addDoc,serverTimestamp  } from 'firebase/firestore' 
 import { v4 as uuidv4 } from 'uuid'
 import * as Yup from 'yup'
 import { Calendar } from 'react-date-range'
@@ -91,7 +91,7 @@ export default function Home() {
     await uploadBytes(imageRef,passport)
     .then(async(snapshot)=>{
       const url = await getDownloadURL(snapshot.ref)
-      await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url})
+      await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url,createdAt:serverTimestamp()})
       .then(()=>{
         addMessage('successfully submitted')
       })

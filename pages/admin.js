@@ -12,7 +12,7 @@ import Table from 'react-bootstrap/Table'
 
 import { fireAuth,dbStore } from '../components/firebase'
 import { signOut,signInWithEmailAndPassword,onAuthStateChanged  } from "firebase/auth"
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,serverTimestamp} from "firebase/firestore";
 
 const Dashboard = ({user})=>{
     const [peopleList,setPeopleList] = useState([])
@@ -34,6 +34,18 @@ const Dashboard = ({user})=>{
         setPeopleList(copyArr)
 
     }
+    const sortCreation=(type=1)=>{
+        const copyArr = [...peopleList]
+        const compare = (a,b)=>{
+            if(type === 1){
+                return ((dayjs(a).isBefore(b)) ? -1 : ((dayjs(a).isAfter(b) )? 1 : 0))
+            }else{
+                return ((dayjs(a).isBefore(b)) ? 1 : ((dayjs(a).isAfter(b) )? -1 : 0))
+            }
+        }
+        copyArr.sort((a,b)=>compare(a.createdAt.toDate(),b.createdAt.toDate()))
+        setPeopleList(copyArr)
+    }
     useEffect(()=>{
         if(!user) getOut() 
         const getPeopleList = async()=>{
@@ -46,7 +58,7 @@ const Dashboard = ({user})=>{
             setPeopleList(peopleArray)
         }
         getPeopleList()
-    },[user])
+    },[])
     const PeopleTable = ()=>{
         return(
             <div>
@@ -64,6 +76,7 @@ const Dashboard = ({user})=>{
                         <th>passport</th>
                         <th>next of kin</th>
                         <th>next of contact</th>
+                        <th>created</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -79,7 +92,8 @@ const Dashboard = ({user})=>{
                             <td>{dayjs(person.dateOfBirth.seconds).format('DD/MM/YYYY')}</td>
                             <td><a href={person.passport}>{person.passport}</a></td>
                             <td>{person.NextOfKin.toLowerCase()}</td>
-                            <td>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</td>                        
+                            <td>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</td> 
+                            <td>{dayjs(person.createdAt.toDate()).format('DD/MM/YYYY HH:mm:ss')}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -94,7 +108,7 @@ const Dashboard = ({user})=>{
             <h2 className='heading-1'>Welcome Admin</h2>
             <Button onClick={logOut} className="btn btn-danger ">Logout</Button>
             <Button onClick={sortName} className="btn btn-primary mx-4">sort by name</Button>
-            
+            <Button onClick={sortCreation} className="btn btn-primary mx-4">sort by created</Button>
             <div>
                 <h4>Registered</h4>
                 {peopleList.length > 1 ? <PeopleTable/> :<div style={{height:"60vh"}}>No Data found</div>}   
