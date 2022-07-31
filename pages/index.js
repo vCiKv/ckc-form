@@ -2,13 +2,13 @@ import {useState} from 'react'
 import Head from 'next/head'
 import {Formik} from 'formik'
 import Form from 'react-bootstrap/Form'
-import InputGroup from 'react-bootstrap/InputGroup'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Toast from 'react-bootstrap/Toast'
 import ToastContainer from 'react-bootstrap/ToastContainer'
 
+import {InputBootstrap,InputBootstrapAddOn,missingError,lengthError,regEx} from '../components/inputs'
 import {storage,dbStore} from '../components/firebase'
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
 import { collection, addDoc } from 'firebase/firestore' 
@@ -44,47 +44,7 @@ export default function Home() {
       </ToastContainer>
     )
   }
-  const InputBootstrap = ({name,label,type="text",required=false,onChange,value,error,size=12,...props})=>{
-    return(
-      <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
-        <Form.Label>{label}</Form.Label>
-        <Form.Control
-          type={type}
-          name={name}
-          value={value}
-          onChange={onChange}
-          isInvalid={!!error}
-          required={required}
-          {...props}
-        />
-        <Form.Control.Feedback type="invalid">
-          {error}
-        </Form.Control.Feedback>
-      </Form.Group>
-    )
-  }
-  const InputBootstrapAddOn = ({name,label,type="text",required=false,onChange,value,error,size=12,addOn,...props})=>{
-    return(
-      <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
-        <Form.Label>{label}</Form.Label>
-          <InputGroup hasValidation>
-            <InputGroup.Text id="basic-addon1">{addOn}</InputGroup.Text>
-            <Form.Control
-              type={type}
-              name={name}
-              value={value}
-              onChange={onChange}
-              isInvalid={error}
-              required={required}
-              {...props}
-            /> 
-            <Form.Control.Feedback type="invalid">
-              {error}
-            </Form.Control.Feedback>
-          </InputGroup>
-      </Form.Group>
-    )
-  }
+ 
   const Blobs = ()=>{
     const blobPos = [
       {
@@ -135,19 +95,7 @@ export default function Home() {
     invalidText:'invalid character',
     invalidAddress:'invalid address',
   }
-  const missingError=(field,prefix = "your")=>{
-    return `please fill ${prefix} ${field}`
-  }
-  const lengthError=(field,isShort = true)=>{
-    return `your ${field} is too ${isShort?'short':'long'}`
-  }
-  const regEx = {
-    names:/^[A-Za-z()-]+$/,
-    fullName:/^[A-Za-z()-\s]+$/,
-    digits:/^[\d()+-]+$/,
-    address:/^[A-Za-z\s\d()-,.]+$/,
-    profession:/^[A-Za-z\d]+$/,
-  } 
+
   //neo4j
   //mDZrZLxnBlZKinMlNvrXgql1QKlMCM9QVHmpsxo_QQQ
   const isDividedBy1000 = (num)=>{
@@ -601,6 +549,7 @@ export default function Home() {
           <DisplayToast/>
         </div>
         <img
+          className='bottom-waves'
           src="/waves.svg"
         />
       </section>
