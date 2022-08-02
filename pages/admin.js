@@ -34,6 +34,15 @@ const Dashboard = ({user})=>{
         setPeopleList(copyArr)
 
     }
+    const sortAmount=()=>{
+        const copyArr = [...peopleList]
+        const compare = (a,b)=>{
+            return ((a < b) ? -1 : ((a > b )? 1 : 0))
+        }
+        copyArr.sort((a,b)=>compare(a.monthlyContribution,b.monthlyContribution))
+        setPeopleList(copyArr)
+
+    }
     const sortCreation=(type=1)=>{
         const copyArr = [...peopleList]
         const compare = (a,b)=>{
@@ -89,7 +98,7 @@ const Dashboard = ({user})=>{
                             <td>{person.profession.toLowerCase()}</td>
                             <td>{'₦'+person.monthlyContribution.toLocaleString('US-en')}</td>
                             <td>{person.gender === 'M'?'male':'female'}</td>
-                            <td>{dayjs(person.dateOfBirth.seconds).format('DD/MM/YYYY')}</td>
+                            <td>{dayjs(person.dateOfBirth.toDate()).format('DD/MM/YYYY')}</td>
                             <td><a href={person.passport}>{person.passport}</a></td>
                             <td>{person.NextOfKin.toLowerCase()}</td>
                             <td>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</td> 
@@ -109,6 +118,8 @@ const Dashboard = ({user})=>{
             <Button onClick={logOut} className="btn btn-danger ">Logout</Button>
             <Button onClick={sortName} className="btn btn-primary mx-4">sort by name</Button>
             <Button onClick={sortCreation} className="btn btn-primary mx-4">sort by created</Button>
+            <Button onClick={sortAmount} className="btn btn-primary mx-4">sort by contribution</Button>
+
             <div>
                 <h4>Registered</h4>
                 {peopleList.length > 1 ? <PeopleTable/> :<div style={{height:"60vh"}}>No Data found</div>}   
@@ -154,11 +165,10 @@ const SignIn=({submit,isLoading})=>{
               handleSubmit,
               handleChange,
               values,
-              touched,
               errors,
-              setFieldValue
+              submitCount
             }) => (
-            <Form noValidate className="mx-2 p-1 form">
+            <Form noValidate method="POST" className="mx-2 p-1 form">
                 <div className="text-center my-4 mb-1 form-title">
                   <h1>Admin</h1>
                   <h3 className="has-text-secondary">input your credentials</h3>
@@ -174,11 +184,14 @@ const SignIn=({submit,isLoading})=>{
                         value={values[input.name]}
                         onChange={handleChange}
                         error={errors[input.name]}
+                        count={submitCount}
                         required
                     />
                 )}
                 </Row>
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
+                <>{(submitCount > 0 && !isValid) && <span style={{textAlign:"center",display:"block",}} className="text-danger my-2">please check for any errors before you submit</span>}</>
+                    
             </Form>
             )}
             </Formik>

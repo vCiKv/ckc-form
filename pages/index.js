@@ -19,8 +19,7 @@ import 'react-date-range/dist/styles.css'
 import 'react-date-range/dist/theme/default.css' 
 export default function Home() {
   const toastDefault = {show:false,message:''}
-  const dateDefault = new Date(1990,0)
-  const [dateData,setDateData] = useState(new Date(1990,0))
+  const [dateData,setDateData] = useState(new Date(1970,0))
   const [toastData,setToastData] = useState(toastDefault)
   const [isLoading, setLoading] = useState(false);
   const closeToast = ()=>{
@@ -136,10 +135,12 @@ export default function Home() {
     phone: Yup.string()
       .required(missingError('phone number'))
       .min(6,'invalid phone number')
+      .max(30,'invalid phone number')
       .matches(regEx.digits,'invalid phone number'),
     otherPhone: Yup.string()
       .optional()
       .min(6,'invalid phone number')
+      .max(30,'invalid phone number')
       .matches(regEx.digits,'invalid phone number'),
     gender: Yup.string()
       .required(missingError('gender','a'))
@@ -224,11 +225,12 @@ export default function Home() {
               handleSubmit,
               handleChange,
               values,
-              touched,
+              isValid,
               errors,
-              setFieldValue
+              setFieldValue,
+              submitCount
             }) => (
-              <Form noValidate className="mx-2 p-1 form">
+              <Form noValidate method="POST" className="mx-2 p-1 form">
                 <div className="text-center my-4 form-title" >
                   <div className="image-container">
                     <img
@@ -245,6 +247,7 @@ export default function Home() {
                 {/*names*/}
                 <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     size={4}
                     name="firstName"
                     value={values.firstName}
@@ -254,14 +257,16 @@ export default function Home() {
                     label="First Name"
                   />
                   <InputBootstrap 
+                    count={submitCount}
                     size={4}
                     name="middleName"
                     value={values.middleName}
                     onChange={handleChange}
-                    error={!!errors.middleName}
+                    error={errors.middleName}
                     label="Middle Name(optional)"
                   />
                   <InputBootstrap 
+                    count={submitCount}
                     size={4}
                     name="lastName"
                     value={values.lastName}
@@ -269,53 +274,12 @@ export default function Home() {
                     error={errors.lastName}
                     required
                     label="Last Name(Surname)"
-                  />
-                  {/* <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikFirstName">
-                    <Form.Label>First name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="firstName"
-                      value={values.firstName}
-                      onChange={handleChange}
-                      isInvalid={!!errors.firstName}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.firstName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikMiddleName">
-                    <Form.Label>Middle Name(optional)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="middleName"
-                      value={values.middleName}
-                      onChange={handleChange}
-                      isInvalid={!!errors.middleName}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.middleName }
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikLastName">
-                    <Form.Label>Last Name(Surname)</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="lastName"
-                      value={values.lastName}
-                      onChange={handleChange}
-                      isInvalid={!!errors.lastName}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.lastName}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
-                  
+                  />                 
                 </Row>
                 {/*email address*/}
                 <Row className="mb-3">
                   <InputBootstrapAddOn
+                    count={submitCount}
                     type="email"
                     name="email"
                     placeholder="name@example.com"
@@ -331,6 +295,7 @@ export default function Home() {
                 {/*gender phone*/}
                 <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     name="phone"
                     value={values.phone}
                     onChange={handleChange}
@@ -341,6 +306,7 @@ export default function Home() {
                 </Row>
                 <Row className="mb-3">
                 <InputBootstrap 
+                  count={submitCount}
                   size={8}
                   name="otherPhone"
                   value={values.otherPhone}
@@ -348,6 +314,7 @@ export default function Home() {
                   error={errors.otherPhone}
                   required
                   label="Other Phone Number(optional)"
+
                 />
                   <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikGender">
                     <Form.Label>Gender</Form.Label>
@@ -356,8 +323,9 @@ export default function Home() {
                       name="gender"
                       value={values.gender}
                       onChange={handleChange}
-                      isInvalid={!!errors.gender}
+                      isInvalid={errors.gender && (values.gender || submitCount)}
                       required
+
                     >
                       <option>select one</option>
                       <option value="M">male</option>
@@ -381,6 +349,7 @@ export default function Home() {
                 {/*HOME address*/}
                 <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     label="Address"
                     placeholder="home address"
                     name="homeAddress"
@@ -391,22 +360,6 @@ export default function Home() {
                     error={errors.homeAddress}
                     required
                   />
-                  {/* <Form.Group as={Col} className="mb-1" md="12"  controlId="validationFormikHomeAddress">
-                    <Form.Label>Address</Form.Label>
-                    <Form.Control
-                      placeholder="home address"
-                      name="homeAddress"
-                      as="textarea"
-                      rows={4}
-                      value={values.homeAddress}
-                      onChange={handleChange}
-                      isInvalid={!!errors.homeAddress}
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.homeAddress}
-                    </Form.Control.Feedback>
-                  </Form.Group> */}
                 </Row>
                 {/*passport*/}
                 <Row className="mb-3">
@@ -419,8 +372,9 @@ export default function Home() {
                       onChange={(event) => {
                         setFieldValue("passport", event.currentTarget.files[0]);
                       }}                      
-                      isInvalid={!!errors.passport}
+                      isInvalid={errors.passport && (submitCount || values.passport)}
                       accept=".png, .jpg, .jpeg"
+
                     />
                     <Form.Control.Feedback type="invalid" tooltip>
                       {errors.passport}
@@ -431,6 +385,7 @@ export default function Home() {
                 {/* profession//expected monthly contribution*/}
                 <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     size={8}
                     value={values.profession}
                     onChange={handleChange}
@@ -440,6 +395,7 @@ export default function Home() {
                     name="profession"
                   />
                   <InputBootstrapAddOn
+                    count={submitCount}
                     size={4}
                     type="number"
                     name="monthlyContribution"
@@ -455,6 +411,7 @@ export default function Home() {
                 {/* work address*/}
                 <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     label="Work Address" 
                     name="workAddress"
                     as="textarea"
@@ -468,6 +425,7 @@ export default function Home() {
                  {/*NextOfKin*/}
                  <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     label="Spouse/Next of Kin(Full Name)"
                     value={values.NextOfKin}
                     onChange={handleChange}
@@ -479,6 +437,7 @@ export default function Home() {
                  {/*NextOfKin*/}
                  <Row className="mb-3">
                   <InputBootstrap 
+                    count={submitCount}
                     label="Spouse/Next of Kin Phone Number"
                     value={values.NextOfKinPhoneNumber}
                     onChange={handleChange}
@@ -488,6 +447,7 @@ export default function Home() {
                     size={6}
                   />
                   <InputBootstrapAddOn
+                    count={submitCount}
                     type="email"
                     size={6}
                     name="NextOfKinEmail"
@@ -501,6 +461,7 @@ export default function Home() {
                   />
                 </Row>
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
+                <>{(submitCount > 0 && !isValid) && <span style={{textAlign:"center",display:"block",}} className="text-danger my-2">please check for any errors before you submit</span>}</>
               </Form>
             )}
           </Formik>

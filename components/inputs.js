@@ -2,7 +2,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
 
-export const InputBootstrap = ({name,label,type="text",required=false,onChange,value,error,size=12,...props})=>{
+export const InputBootstrap = ({name,label,count,type="text",required=false,onChange,value,error,size=12,...props})=>{
     return(
       <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
         <Form.Label>{label}</Form.Label>
@@ -11,7 +11,7 @@ export const InputBootstrap = ({name,label,type="text",required=false,onChange,v
           name={name}
           value={value}
           onChange={onChange}
-          isInvalid={!!error}
+          isInvalid={error &&  (value || count)}
           required={required}
           {...props}
         />
@@ -21,18 +21,18 @@ export const InputBootstrap = ({name,label,type="text",required=false,onChange,v
       </Form.Group>
     )
   }
-export const InputBootstrapAddOn = ({name,label,type="text",required=false,onChange,value,error,size=12,addOn,...props})=>{
+export const InputBootstrapAddOn = ({name,label,count,type="text",required=false,onChange,value,error,size=12,addOn,...props})=>{
     return(
       <Form.Group as={Col} className="mb-1" md={size} controlId={`validationFormiK${name}`}>
         <Form.Label>{label}</Form.Label>
           <InputGroup hasValidation>
-            <InputGroup.Text id="basic-addon1">{addOn}</InputGroup.Text>
+            <InputGroup.Text id={"basic-addon-"+name}>{addOn}</InputGroup.Text>
             <Form.Control
               type={type}
               name={name}
               value={value}
               onChange={onChange}
-              isInvalid={error}
+              isInvalid={error && (value || count)}
               required={required}
               {...props}
             /> 
