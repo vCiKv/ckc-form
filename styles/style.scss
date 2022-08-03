@@ -10,6 +10,7 @@ body{
   min-height: 100vh;
   font-family: $text-font;
 }
+
 .toast{
   .toast-header{
     background:color(primary);
@@ -120,6 +121,23 @@ body{
     }
     
 }
+.data-style{
+  display:inline-flex;
+  justify-content:center;
+  margin:5px 0;
+  border:1px solid color(primary);
+  border-radius:6px;
+  &>div{
+    padding:5px;
+    border-radius:4px;
+    cursor: pointer;
+
+  }
+  .active{
+    background-color: color(primary);
+    color:white;
+  }
+}
 footer{
   @include space-section;
   display:block;
@@ -139,4 +157,68 @@ footer{
 }
 .has-text-secondary{
   color:color(secondary)
+}
+@media 
+only screen and (max-width: 760px),
+(min-device-width: 768px) and (max-device-width: 1024px)  {
+
+	/* Force table to not be like tables anymore */
+	table, thead, tbody, th, td, tr { 
+		display: block; 
+    
+	}
+	
+	/* Hide table headers (but not display: none;, for accessibility) */
+	thead tr { 
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+	
+	tr { 
+    border: 1px solid #ccc; 
+    width: 100%; 
+    overflow-x: auto;
+  }
+	
+	td { 
+		/* Behave  like a "row" */
+		border: none;
+		border-bottom: 1px solid #eee; 
+		position: relative;
+		padding-left: 50% !important;
+    width: 100%; 
+
+
+	}
+  // td:nth-of-type(odd){
+  //   background-color: transparent !important;
+
+  // }
+	// tr:nth-of-type(odd){
+  //   background-color:rgba(122, 122, 122, 0.5);
+  // }
+	td:before { 
+		/* Now like a table header */
+		position: absolute;
+		/* Top/left values mimic padding */
+		top: 6px;
+		left: 6px;
+		width: 45%; 
+		padding-right: 10px; 
+		white-space: nowrap;
+	}
+  td:nth-of-type(1):before { content: "Name"; }
+	td:nth-of-type(2):before { content: "Email"; }
+	td:nth-of-type(3):before { content: "phone number"; }
+	td:nth-of-type(4):before { content: "address"; }
+	td:nth-of-type(5):before { content: "profession"; }
+	td:nth-of-type(6):before { content: "contribution"; }
+	td:nth-of-type(7):before { content: "gender"; }
+  td:nth-of-type(8):before { content: "birthday"; }
+	td:nth-of-type(9):before { content: "passport"; }
+	td:nth-of-type(10):before { content: "next of kin"; }
+	td:nth-of-type(11):before { content: "next of contact"; }
+	td:nth-of-type(12):before { content: "created"; }
+
 }
