@@ -22,6 +22,7 @@ export default function Home() {
   const [dateData,setDateData] = useState(new Date(1970,0))
   const [toastData,setToastData] = useState(toastDefault)
   const [isLoading, setLoading] = useState(false);
+  const [isSubmitted,setIsSubmitted] = useState(false)
   const closeToast = ()=>{
     setToastData({...toastData,show:false})
     setLoading(false)
@@ -59,15 +60,6 @@ export default function Home() {
     if(num < 1000 || isNaN(1000)) return false
     return(num%1000===0)?true:false
   }
-  // const getImageUrl = async (ref)=>{
-  //   await getDownloadURL(ref)
-  //   .then((url)=>{
-  //     return url
-  //   })
-  //   .catch(()=>{
-  //     return false
-  //   })
-  // }
   const submitForm = async (values)=>{
     if(isLoading){
       return
@@ -93,6 +85,7 @@ export default function Home() {
       await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url,createdAt:serverTimestamp()})
       .then(()=>{
         addMessage('successfully submitted')
+        setTimeout((()=>setIsSubmitted(true)),1000)
       })
       .catch((e)=>{
         addMessage(customFormError.error)
@@ -189,17 +182,24 @@ export default function Home() {
     passport: Yup.mixed()
       .required('upload a passport photograph')
   })
-
-  //remove number
-  return (
-    <main>
-      <Head>
-        <title>Unique Set CKC &apos;86</title>
-        <meta name="theme-color" content="#0001fc"></meta>
-      </Head>
-      <section>
-        <div className="container">
-        {/* <Blobs/> */}
+  const FormHeader =()=>{
+    return(
+      <div className="text-center my-4 form-title" >
+        <div className="image-container">
+          <img
+            alt="ckc"
+            src="/logo.png"
+            width={250}
+            height={250}
+          />
+        </div>
+        <h1 className="h1">Unique Set CKC &apos;86</h1>
+        <h3 className="h3 has-text-secondary">Multipurpose Co-Operative Society Limited</h3>
+      </div>
+    )
+  }
+  const FormikForm = ()=>{
+    return(
           <Formik
             validationSchema={schema}
             onSubmit={submitForm}
@@ -231,18 +231,7 @@ export default function Home() {
               submitCount
             }) => (
               <Form noValidate method="POST" className="mx-2 p-1 form">
-                <div className="text-center my-4 form-title" >
-                  <div className="image-container">
-                    <img
-                      alt="ckc"
-                      src="/logo.png"
-                      width="100%"
-                      height="100%"
-                    />
-                  </div>
-                  <h1>Unique Set CKC &apos;86</h1>
-                  <h3 className="has-text-secondary">Multipurpose Co-Operative Society Limited</h3>
-                </div>
+                <FormHeader/>
 
                 {/*names*/}
                 <Row className="mb-3">
@@ -465,6 +454,30 @@ export default function Home() {
               </Form>
             )}
           </Formik>
+    )
+  }
+  const Submitted = ()=>{
+    return(
+      <>
+        <FormHeader/>
+        <div>
+          <h1 style={{fontWeight:600}}className="display-3 text-success">Thank for submitting your form has been sent</h1>
+        </div>
+      </>
+    )
+   
+  } 
+  
+  //remove number
+  return (
+    <main>
+      <Head>
+        <title>Unique Set CKC &apos;86</title>
+        <meta name="theme-color" content="#0001fc"></meta>
+      </Head>
+      <section>
+        <div className="container">
+          {isSubmitted ? <Submitted/>:<FormikForm/>}
           <DisplayToast/>
         </div>
         <img
