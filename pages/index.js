@@ -7,7 +7,7 @@ import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
 import Toast from 'react-bootstrap/Toast'
 import ToastContainer from 'react-bootstrap/ToastContainer'
-
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import {InputBootstrap,InputBootstrapAddOn,missingError,lengthError,regEx} from '../components/inputs'
 import {storage,dbStore} from '../components/firebase'
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
@@ -23,6 +23,7 @@ export default function Home() {
   const [toastData,setToastData] = useState(toastDefault)
   const [isLoading, setLoading] = useState(false);
   const [isSubmitted,setIsSubmitted] = useState(false)
+  const [animateParent] = useAutoAnimate()
   const closeToast = ()=>{
     setToastData({...toastData,show:false})
     setLoading(false)
@@ -220,6 +221,7 @@ export default function Home() {
               monthlyContribution: '',
               passport:null
             }}
+            // ref={animateParent}
           >
             {({
               handleSubmit,
@@ -231,8 +233,6 @@ export default function Home() {
               submitCount
             }) => (
               <Form noValidate method="POST" className="mx-2 p-1 form">
-                <FormHeader/>
-
                 {/*names*/}
                 <Row className="mb-3">
                   <InputBootstrap 
@@ -294,17 +294,16 @@ export default function Home() {
                   />
                 </Row>
                 <Row className="mb-3">
-                <InputBootstrap 
-                  count={submitCount}
-                  size={8}
-                  name="otherPhone"
-                  value={values.otherPhone}
-                  onChange={handleChange}
-                  error={errors.otherPhone}
-                  required
-                  label="Other Phone Number(optional)"
-
-                />
+                  <InputBootstrap 
+                    count={submitCount}
+                    size={8}
+                    name="otherPhone"
+                    value={values.otherPhone}
+                    onChange={handleChange}
+                    error={errors.otherPhone}
+                    required
+                    label="Other Phone Number(optional)"
+                  />
                   <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikGender">
                     <Form.Label>Gender</Form.Label>
                     <Form.Select 
@@ -459,7 +458,6 @@ export default function Home() {
   const Submitted = ()=>{
     return(
       <>
-        <FormHeader/>
         <div>
           <h1 style={{fontWeight:600}}className="display-3 text-success">Thank for submitting your form has been sent</h1>
         </div>
@@ -475,14 +473,17 @@ export default function Home() {
         <title>Unique Set CKC &apos;86</title>
         <meta name="theme-color" content="#0001fc"></meta>
       </Head>
-      <section>
-        <div className="container">
+      <section >
+        <div className="container" ref={animateParent} >
+          <FormHeader/>
+          <button className='btn btn-dark' onClick={()=>setIsSubmitted(!isSubmitted)}>change</button>
           {isSubmitted ? <Submitted/>:<FormikForm/>}
           <DisplayToast/>
         </div>
         <img
           className='bottom-waves'
           src="/waves.svg"
+          alt="waves"
         />
       </section>
      

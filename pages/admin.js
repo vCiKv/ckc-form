@@ -4,18 +4,17 @@ import {useRouter} from 'next/router'
 import Head from 'next/head'
 import * as Yup from 'yup'
 import dayjs from 'dayjs'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import {InputBootstrap,missingError} from '../components/inputs'
 import {Formik} from 'formik'
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-
 import Button from 'react-bootstrap/Button'
 import Table from 'react-bootstrap/Table'
 import Card from 'react-bootstrap/Card'
 import ListGroup from 'react-bootstrap/ListGroup'
 import { Container } from 'react-bootstrap'
-
 import { fireAuth,dbStore } from '../components/firebase'
 import { signOut,signInWithEmailAndPassword,onAuthStateChanged  } from "firebase/auth"
 import { collection, getDocs} from "firebase/firestore";
@@ -25,6 +24,8 @@ const Dashboard = ({user})=>{
     const [peopleList,setPeopleList] = useState([])
     const [seeImage,setSeeImage] = useState(false)
     const [isTable,setIsTable] = useState(false)
+    const [animateParent] = useAutoAnimate()
+    
     const router = useRouter()
     const getOut = () => router.push('/')
     const logOut = async()=>{
@@ -46,7 +47,7 @@ const Dashboard = ({user})=>{
     const sortAmount=()=>{
         const copyArr = [...peopleList]
         const compare = (a,b)=>{
-            return ((a < b) ? -1 : ((a > b )? 1 : 0))
+            return ((a < b) ? 1 : ((a > b )? -1 : 0))
         }
         copyArr.sort((a,b)=>compare(a.monthlyContribution,b.monthlyContribution))
         setPeopleList(copyArr)
@@ -194,7 +195,7 @@ const Dashboard = ({user})=>{
                 </div>
             </div>
             
-            <div>
+            <div ref={animateParent}>
                 <h4 className="h4">Registered</h4>
                 {peopleList.length > 1 ? (isTable ? <PeopleTable/>:<PeopleCard/>) : <div style={{height:"60vh"}}>No data found check internet connection or refresh page</div>}   
                 <Button className="btn btn-secondary" onClick={()=>alert('not done yet')}>download data</Button>
@@ -225,7 +226,7 @@ const SignIn=({submit,isLoading})=>{
     })
     
     return(        
-        <div className="container">
+        <div className="container" style={{minHeight:"85vh"}}>
             <Formik
                 validationSchema={schema}
                 onSubmit={submit}
@@ -239,7 +240,8 @@ const SignIn=({submit,isLoading})=>{
               handleChange,
               values,
               errors,
-              submitCount
+              submitCount,
+              isValid
             }) => (
             <Form noValidate method="POST" className="mx-2 p-1 form">
                 <div className="text-center my-4 mb-1 form-title">
@@ -278,6 +280,8 @@ export default function Admin(){
 
     const [isLoading, setLoading] = useState(false);
     const [user,setUser]= useState(null) 
+    const [animateParent] = useAutoAnimate()
+
     const submitForm = async(values)=>{
         setLoading(true)
         await signInWithEmailAndPassword(fireAuth,values.email,values.password)
@@ -305,7 +309,7 @@ export default function Admin(){
             <title>Unique Set CKC &apos;86</title>
             <meta name="theme-color" content="#0001fc"></meta>
             </Head>
-            <section>{( !user ) ? <SignIn isLoading={isLoading} submit={submitForm}/> : <Dashboard user={user}/>}<img className="bottom-waves" src="/waves.svg"/></section>
+            <section ref={animateParent}>{( !user ) ? <SignIn isLoading={isLoading} submit={submitForm}/> : <Dashboard user={user}/>}<img className="bottom-waves" src="/waves.svg"/></section>
         </main>
     )
 }
