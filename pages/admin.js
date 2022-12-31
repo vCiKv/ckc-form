@@ -2,10 +2,9 @@ import {useState,useEffect} from 'react'
 import Image from 'next/image'
 import {useRouter} from 'next/router' 
 import Head from 'next/head'
-import * as Yup from 'yup'
 import dayjs from 'dayjs'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import {InputBootstrap,missingError} from '../components/inputs'
+import {InputBootstrap} from '../components/inputs'
 import {Formik} from 'formik'
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
@@ -18,6 +17,7 @@ import { Container } from 'react-bootstrap'
 import { fireAuth,dbStore } from '../components/firebase'
 import { signOut,signInWithEmailAndPassword,onAuthStateChanged  } from "firebase/auth"
 import { collection, getDocs} from "firebase/firestore";
+import { adminSchema } from '../lib/formSchema'
 
 const Dashboard = ({user})=>{
     // console.log('rendered dash')
@@ -115,7 +115,9 @@ const Dashboard = ({user})=>{
                     </tr>
                 </thead>
                 <tbody>
-                    {peopleList.map(person=>(
+                    {peopleList.map(person=>{
+                       const useDateOfBirth = typeof(person.dateOfBirth) === "object" ? person.dateOfBirth.toDate() : person.dateOfBirth                          
+                        return(
                         <tr key={person.id}>
                             <td>{(`${person.firstName} ${person.middleName??''} ${person.lastName}`).toLowerCase()}</td>
                             <td>{person.email.toLowerCase()}</td>
@@ -124,13 +126,14 @@ const Dashboard = ({user})=>{
                             <td>{person.profession.toLowerCase()}</td>
                             <td>{'₦'+person.monthlyContribution.toLocaleString('US-en')}</td>
                             <td>{person.gender === 'M'?'male':'female'}</td>
-                            <td>{dayjs(person.dateOfBirth.toDate()).format('DD/MM/YYYY')}</td>
+                            <td>{dayjs(useDateOfBirth).format('DD/MM/YYYY')}</td>
                             <td>{seeImage?<PassportImage src={person.passport} alt={person.lastName}/>:<a href={person.passport}>{(`passport-${person.lastName}`).toLowerCase()}</a>}</td>
                             <td>{person.NextOfKin.toLowerCase()}</td>
                             <td>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</td> 
                             <td>{dayjs(person.createdAt.toDate()).format('DD/MM/YYYY HH:mm:ss')}</td>
                         </tr>
-                    ))}
+                        )
+                    })}
                 </tbody>
             </Table>
             </div>
@@ -141,34 +144,37 @@ const Dashboard = ({user})=>{
     const PeopleCard = ()=>{
         return(
             <Row xs={1} md={3} className="g-4" style={{alignItem:"stretch"}}>
-                {peopleList.map(person=>(
-                    <Col style={{height:"100%"}} key={person.id}>
-                    <Card className="rounded-lg">
-                        {/* <Card.Img variant="top" src={person.passport} /> */}
-                        <PassportImage src={person.passport} alt="img" noLink/>
-                        <Card.Body>
-                            <Card.Title style={{height:75}}>{(`${person.firstName} ${person.middleName??''} ${person.lastName}`).toLowerCase()}</Card.Title>
-                            <Card.Text>
-                                <ListGroup variant="flush">
-                                    <ListGroup.Item style={{fontSize:18,height:75}}>{person.email.toLowerCase()}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:75}}>{`${person.phone} ${person.otherPhone??''}`}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:175}}>{person.homeAddress.toLowerCase()}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:75}}>{person.profession.toLowerCase()}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:45}}>{'₦'+person.monthlyContribution.toLocaleString('US-en')}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:45}}>{person.gender === 'M'?'male':'female'}</ListGroup.Item>
-                                    <ListGroup.Item style={{fontSize:18,height:45}}>{dayjs(person.dateOfBirth.toDate()).format('DD/MM/YYYY')}</ListGroup.Item>
+                {peopleList.map(person=>{
+                    const useDateOfBirth = typeof(person.dateOfBirth) === "object" ? person.dateOfBirth.toDate() : person.dateOfBirth                           
+                    return(
+                        <Col style={{height:"100%"}} key={person.id}>
+                        <Card className="rounded-lg">
+                            {/* <Card.Img variant="top" src={person.passport} /> */}
+                            <PassportImage src={person.passport} alt="img" noLink/>
+                            <Card.Body>
+                                <Card.Title style={{height:75}}>{(`${person.firstName} ${person.middleName??''} ${person.lastName}`).toLowerCase()}</Card.Title>
+                                <Card.Text>
                                     <ListGroup variant="flush">
-                                        <h6 className="h6 my-2">Next of Kin</h6>
-                                        <ListGroup.Item style={{fontSize:18,height:100}}>{person.NextOfKin.toLowerCase()}</ListGroup.Item>
-                                        <ListGroup.Item style={{fontSize:18,height:140}}>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</ListGroup.Item> 
+                                        <ListGroup.Item style={{fontSize:18,height:75}}>{person.email.toLowerCase()}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:75}}>{`${person.phone} ${person.otherPhone??''}`}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:175}}>{person.homeAddress.toLowerCase()}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:75}}>{person.profession.toLowerCase()}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:45}}>{'₦'+person.monthlyContribution.toLocaleString('US-en')}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:45}}>{person.gender === 'M'?'male':'female'}</ListGroup.Item>
+                                        <ListGroup.Item style={{fontSize:18,height:45}}>{dayjs(useDateOfBirth).format('DD/MM/YYYY')}</ListGroup.Item>
+                                        <ListGroup variant="flush">
+                                            <h6 className="h6 my-2">Next of Kin</h6>
+                                            <ListGroup.Item style={{fontSize:18,height:100}}>{person.NextOfKin.toLowerCase()}</ListGroup.Item>
+                                            <ListGroup.Item style={{fontSize:18,height:140}}>{`${person.NextOfKinPhoneNumber} ${person.NextOfKinEmail??''}`}</ListGroup.Item> 
+                                        </ListGroup>
                                     </ListGroup>
-                                </ListGroup>
-                            </Card.Text>
-                        </Card.Body>
-                        <Card.Footer className="text-muted">created {dayjs(person.createdAt.toDate()).format('DD/MM/YYYY HH:mm:ss')}</Card.Footer>
-                    </Card>
-                    </Col>
-                ))}
+                                </Card.Text>
+                            </Card.Body>
+                            <Card.Footer className="text-muted">created {dayjs(person.createdAt.toDate()).format('DD/MM/YYYY HH:mm:ss')}</Card.Footer>
+                        </Card>
+                        </Col>
+                    )
+                })}
             </Row>
         )
     }
@@ -215,20 +221,20 @@ const SignIn=({submit,isLoading})=>{
             type:"password",
         },
     ]
-    const schema = Yup.object().shape({
-        email: Yup.string()
-          .required(missingError('username'))
-          .trim()
-          .email('a valid email is required')
-          .lowercase(),
-        password: Yup.string()
-          .required(missingError('password'))
-    })
+    // const schema = Yup.object().shape({
+    //     email: Yup.string()
+    //       .required(missingError('username'))
+    //       .trim()
+    //       .email('a valid email is required')
+    //       .lowercase(),
+    //     password: Yup.string()
+    //       .required(missingError('password'))
+    // })
     
     return(        
         <div className="container" style={{minHeight:"85vh"}}>
             <Formik
-                validationSchema={schema}
+                validationSchema={adminSchema}
                 onSubmit={submit}
                 initialValues={{
                     email:"",
@@ -248,21 +254,21 @@ const SignIn=({submit,isLoading})=>{
                   <h1 className="h1">Admin</h1>
                   <h3 className=" h3 has-text-secondary">input your credentials</h3>
                 </div>
-                <Row className="mb-3">
-                {formData.map(input=>
-                    <InputBootstrap 
-                        key={input.name} 
-                        name={input.name} 
-                        label={input.name} 
-                        type={input.type} 
-                        size={6}  
-                        value={values[input.name]}
-                        onChange={handleChange}
-                        error={errors[input.name]}
-                        count={submitCount}
-                        required
-                    />
-                )}
+                <Row className="mb-3" style={{maxWidth:"500px",marginLeft:"auto",marginRight:"auto"}}>
+                    {formData.map(input=>
+                        <InputBootstrap 
+                            key={input.name} 
+                            name={input.name} 
+                            label={input.name} 
+                            type={input.type} 
+                            size={12}  
+                            value={values[input.name]}
+                            onChange={handleChange}
+                            error={errors[input.name]}
+                            submitCount={submitCount}
+                            required
+                        />
+                    )}
                 </Row>
                 <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
                 <>{(submitCount > 0 && !isValid) && <span style={{textAlign:"center",display:"block",}} className="text-danger my-2">please check for any errors before you submit</span>}</>

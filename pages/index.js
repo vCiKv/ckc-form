@@ -1,71 +1,53 @@
 import {useState} from 'react'
 import Head from 'next/head'
-import {Formik} from 'formik'
+import Image from 'next/image'
+
+import {Formik,useFormikContext } from 'formik'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
+
 import Form from 'react-bootstrap/Form'
 import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import Button from 'react-bootstrap/Button'
-import Toast from 'react-bootstrap/Toast'
-import ToastContainer from 'react-bootstrap/ToastContainer'
-import { useAutoAnimate } from '@formkit/auto-animate/react'
-import {InputBootstrap,InputBootstrapAddOn,missingError,lengthError,regEx} from '../components/inputs'
-import {storage,dbStore} from '../components/firebase'
+
+import dayjs from 'dayjs'
+
 import {ref,uploadBytes,getDownloadURL } from 'firebase/storage'
-import { collection, addDoc,serverTimestamp  } from 'firebase/firestore' 
+import { collection,addDoc,serverTimestamp  } from 'firebase/firestore' 
+
+import schema from '../lib/formSchema'
+import DisplayToast from '../lib/displayToast'
+
+import customFormError from '../lib/customFormError'
+import {InputBootstrap,SelectBootstrap,InputPassport} from '../components/inputs'
+import {storage,dbStore} from '../components/firebase'
+import useToast from '../hooks/useToast' 
+
 import { v4 as uuidv4 } from 'uuid'
-import * as Yup from 'yup'
-import { Calendar } from 'react-date-range'
-import 'react-date-range/dist/styles.css'
-import 'react-date-range/dist/theme/default.css' 
+
 export default function Home() {
-  const toastDefault = {show:false,message:''}
-  const [dateData,setDateData] = useState(new Date(1970,0))
-  const [toastData,setToastData] = useState(toastDefault)
+  const [toastData,addMessage,closeToast] = useToast()
+  const [dateData,setDateData] = useState(dayjs('01-01-1970').format('YYYY-MM-DD'))
   const [isLoading, setLoading] = useState(false);
   const [isSubmitted,setIsSubmitted] = useState(false)
   const [animateParent] = useAutoAnimate()
-  const closeToast = ()=>{
-    setToastData({...toastData,show:false})
-    setLoading(false)
+  const changeDate = (e)=>{
+    setDateData(e.target.value)
+    console.log('date',dateData)
   }
-  const addMessage = (msg)=>{
-    setToastData({show:true,message:msg})
-  }
-  const DisplayToast =()=>{
-    return(
-      <ToastContainer className="position-fixed bottom-0 start-50 translate-middle-x" position="bottom-center">
-      <Toast bg="secondary" show={toastData.show} onClose={closeToast} position="bottom-center" delay={5500} autohide>
-        <Toast.Header closeVariant="white">
-          <strong className="me-auto"></strong>
-        </Toast.Header>
-        {/* <Toast.Body className="text-center">{toastData.message}</Toast.Body> */}
-        <Toast.Body className="text-center">{toastData.message}</Toast.Body>
-
-      </Toast>
-      </ToastContainer>
-    )
-  }
- 
-  const customFormError = {
-    size:'file is too large',
-    type:'file is not valid',
-    image:'problem uploading image',
-    error:'problem submitting form',
-    invalidText:'invalid character',
-    invalidAddress:'invalid address',
-  }
+  const OptionalInfo = ()=>(
+    <p style={{fontSize:"12px"}}>* are optional fields</p>
+  )
+  
 
   //neo4j
   //mDZrZLxnBlZKinMlNvrXgql1QKlMCM9QVHmpsxo_QQQ
-  const isDividedBy1000 = (num)=>{
-    if(num < 1000 || isNaN(1000)) return false
-    return(num%1000===0)?true:false
-  }
+  
   const submitForm = async (values)=>{
     if(isLoading){
       return
     }
     setLoading(true)
+    console.log('person',{...values,createdAt:serverTimestamp()}) 
     const {passport} = values
     if(!passport){
       addMessage(customFormError.type)
@@ -83,9 +65,11 @@ export default function Home() {
     await uploadBytes(imageRef,passport)
     .then(async(snapshot)=>{
       const url = await getDownloadURL(snapshot.ref)
-      await addDoc(collection(dbStore, 'people'),{...values,dateOfBirth:dateData,passport:url,createdAt:serverTimestamp()})
+      //dateOfBirth:dateData
+      await addDoc(collection(dbStore, 'people'),{...values,passport:url,createdAt:serverTimestamp()})
       .then(()=>{
         addMessage('successfully submitted')
+        console.log('person2',{...values,passport:url,createdAt:serverTimestamp()})
         setTimeout((()=>setIsSubmitted(true)),1000)
       })
       .catch((e)=>{
@@ -100,89 +84,6 @@ export default function Home() {
     })
     setLoading(false)  
   }
-  const schema = Yup.object().shape({
-    firstName: Yup.string()
-      .required(missingError('first name')).min(2,lengthError('name'))
-      .max(30,lengthError('name',false))
-      .matches(regEx.names,customFormError.invalidText)
-      .trim()
-      .lowercase(),
-    lastName: Yup.string()
-      .required(missingError('last name'))
-      .min(2,lengthError('name'))
-      .max(30,lengthError('name',false))
-      .matches(regEx.names,customFormError.invalidText)
-      .trim()
-      .lowercase(),
-    middleName: Yup.string()
-      .optional()
-      .min(2,lengthError('name'))
-      .max(30,lengthError('name',false))
-      .matches(regEx.names,customFormError.invalidText)
-      .trim()
-      .lowercase(),
-    email: Yup.string()
-      .required(missingError('E-mail'))
-      .email('please use a valid E-mail')
-      .trim()
-      .lowercase(),
-    phone: Yup.string()
-      .required(missingError('phone number'))
-      .min(6,'invalid phone number')
-      .max(30,'invalid phone number')
-      .matches(regEx.digits,'invalid phone number'),
-    otherPhone: Yup.string()
-      .optional()
-      .min(6,'invalid phone number')
-      .max(30,'invalid phone number')
-      .matches(regEx.digits,'invalid phone number'),
-    gender: Yup.string()
-      .required(missingError('gender','a'))
-      .oneOf(['M','F'], 'invalid input'),
-    homeAddress: Yup.string()
-      .required(missingError('home address'))
-      .min(2,'the name is too short')
-      .max(130,'please reduce the details')
-      .matches(regEx.address,customFormError.invalidAddress)
-      .trim(),
-    NextOfKin: Yup.string()
-      .required(missingError('Next of Kin','a'))
-      .min(2,missingError('details','more'))
-      .max(50,'please reduce the details')
-      .matches(regEx.fullName,customFormError.invalidText)
-      .trim()
-      .lowercase(),
-    NextOfKinEmail: Yup.string()
-      .optional()
-      .email('please use a valid E-mail')
-      .trim()
-      .lowercase(),
-    NextOfKinPhoneNumber: Yup.string()
-      .required(missingError('phone number','your spouse/next of kin\'s'))
-      .min(6,'invalid phone number')
-      .matches(regEx.digits,'invalid phone number'),
-    workAddress: Yup.string()
-      .required(missingError('work address'))
-      .min(2,missingError('details','more'))
-      .max(130,'please reduce the details')
-      .matches(regEx.address,customFormError.invalidAddress)
-      .trim(),
-    profession: Yup.string()
-      .required(missingError('current profession'))
-      .min(2,missingError('details','more'))
-      .max(45,'please reduce the details')
-      .matches(regEx.profession,customFormError.invalidText)
-      .trim()
-      .lowercase(),
-    monthlyContribution: Yup.number()
-      .required(missingError('amount','an'))
-      .positive('invalid number')
-      .integer('invalid number')
-      .moreThan(999,'amount is too low')
-      .test('isDividedBy1000','amount must be divisible by 1000',(value)=>isDividedBy1000(value)),
-    passport: Yup.mixed()
-      .required('upload a passport photograph')
-  })
   const FormHeader =()=>{
     return(
       <div className="text-center my-4 form-title" >
@@ -196,270 +97,174 @@ export default function Home() {
         </div>
         <h1 className="h1">Unique Set CKC &apos;86</h1>
         <h3 className="h3 has-text-secondary">Multipurpose Co-Operative Society Limited</h3>
+        <OptionalInfo/>
       </div>
     )
   }
-  const FormikForm = ()=>{
+
+  const initialFormValues= {
+    firstName: '',
+    lastName: '',
+    middleName: '',
+    email: '',
+    phone: '',
+    otherPhone:'',
+    gender:'',
+    dateOfBirth:'',
+    homeAddress: '',
+    NextOfKin: '',
+    NextOfKinPhoneNumber: '',
+    NextOfKinEmail: '',
+    workAddress: '',
+    profession:'',
+    monthlyContribution: '',
+    passport:null
+  }
+  const FormBody = ()=>{
+    const formikProps = useFormikContext()
+    const formNameObj = {
+      names:[{
+        name:'firstName',
+        label:'First Name',
+        size:4
+      },{
+        name:'middleName',
+        label:'Middle Name*',
+        size:4,
+        required:false
+      },{ 
+        name:'lastName',
+        label:'Last Name(Surname)',
+        size:4
+      }],
+      email:[{
+        name:'email',
+        type:'eamil',
+        label:'E-mail Address',
+        placeholder:"name@example.com",
+        addOn:"@"
+      }],
+      phone:[{
+        name:'phone',
+        label:'Phone Number',
+      }],
+      gender:[{
+        name:'otherPhone',
+        label:'Other Phone Number*',
+        size:6,
+        required:false
+      },{
+        component:SelectBootstrap,
+        label:'gender',
+        name:'gender',
+        options:[
+          {name:'male',value:'M'},
+          {name:'female',value:'F'}
+        ],
+        size:3
+      },{
+        type:"date",
+        name:"dateOfBirth",
+        //value:dateData,
+        //onChange:setDateData,
+        label:"Date of Birth",
+        size:3
+      }],
+      homeAddress:[{
+        label:"Address",
+        name:"homeAddress",
+        as:"textarea",
+        rows:4,
+      }],
+      passport:[{
+        component:InputPassport,
+        label:"Upload Passport",
+        name:"passport",
+        onChange:(event)=>{
+          formikProps.setFieldValue("passport", event.currentTarget.files[0]);
+        } 
+      }],
+      monthlyContribution:[{
+        label:"Profession",
+        name:"profession",
+        size:8,
+      },{
+        size:4,
+        type:"number",
+        name:"monthlyContribution",
+        label:"Monthly Contribution",
+        step:1000,
+        addOn:"₦",
+      }],
+      workAddress:[{
+        label:"Work Address" ,
+        name:"workAddress",
+        as:"textarea",
+        rows:4,
+      }],
+      NextOfKin:[{
+        name:'NextOfKin',
+        label:'Spouse/Next of Kin(Full Name)',
+      }],
+
+      NextOfKinPhoneNumber:[{
+        label:"Spouse/Next of Kin Phone Number",
+        name:"NextOfKinPhoneNumber",
+        size:6,
+      },{
+        name:'NextOfKinEmail',
+        type:'eamil',
+        label:'Spouse/Next of Kin E-mail Address*',
+        placeholder:"name@example.com",
+        addOn:"@",
+        size:6,
+        required:false
+      }],
+    }
     return(
-          <Formik
-            validationSchema={schema}
-            onSubmit={submitForm}
-            initialValues={{
-              firstName: '',
-              lastName: '',
-              middleName: '',
-              email: '',
-              phone: '',
-              otherPhone:'',
-              gender:'',
-              homeAddress: '',
-              NextOfKin: '',
-              NextOfKinPhoneNumber: '',
-              NextOfKinEmail: '',
-              workAddress: '',
-              profession:'',
-              monthlyContribution: '',
-              passport:null
-            }}
-            // ref={animateParent}
-          >
-            {({
-              handleSubmit,
-              handleChange,
-              values,
-              isValid,
-              errors,
-              setFieldValue,
-              submitCount
-            }) => (
-              <Form noValidate method="POST" className="mx-2 p-1 form">
-                {/*names*/}
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    size={4}
-                    name="firstName"
-                    value={values.firstName}
-                    onChange={handleChange}
-                    error={errors.firstName}
-                    required
-                    label="First Name"
-                  />
-                  <InputBootstrap 
-                    count={submitCount}
-                    size={4}
-                    name="middleName"
-                    value={values.middleName}
-                    onChange={handleChange}
-                    error={errors.middleName}
-                    label="Middle Name(optional)"
-                  />
-                  <InputBootstrap 
-                    count={submitCount}
-                    size={4}
-                    name="lastName"
-                    value={values.lastName}
-                    onChange={handleChange}
-                    error={errors.lastName}
-                    required
-                    label="Last Name(Surname)"
-                  />                 
-                </Row>
-                {/*email address*/}
-                <Row className="mb-3">
-                  <InputBootstrapAddOn
-                    count={submitCount}
-                    type="email"
-                    name="email"
-                    placeholder="name@example.com"
-                    aria-describedby="inputGroupPrepend"
-                    value={values.email}
-                    onChange={handleChange}
-                    error={errors.email}
-                    required
-                    addOn="@"
-                    label="E-mail Address"
-                  />               
-                </Row>   
-                {/*gender phone*/}
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    name="phone"
-                    value={values.phone}
-                    onChange={handleChange}
-                    error={errors.phone}
-                    required
-                    label="Phone Number"
-                  />
-                </Row>
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    size={8}
-                    name="otherPhone"
-                    value={values.otherPhone}
-                    onChange={handleChange}
-                    error={errors.otherPhone}
-                    required
-                    label="Other Phone Number(optional)"
-                  />
-                  <Form.Group as={Col} className="mb-1" md="4" controlId="validationFormikGender">
-                    <Form.Label>Gender</Form.Label>
-                    <Form.Select 
-                      aria-label="Default select example"
-                      name="gender"
-                      value={values.gender}
-                      onChange={handleChange}
-                      isInvalid={errors.gender && (values.gender || submitCount)}
-                      required
-
-                    >
-                      <option>select one</option>
-                      <option value="M">male</option>
-                      <option value="F">female</option>
-                    </Form.Select>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.gender}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
-                {/*DOB*/}
-                <Row className="mb-3">
-                  <Form.Group as={Col} className="mb-1" md="12" controlId="validationFormikDoB">
-                    <Form.Label>Date of Birth </Form.Label>
-                    <br/>
-                    <div style={{display:'flex',justifyContent:'center'}}>
-                      <Calendar name="dateOfBirth" date={dateData} maxDate={new Date()} onChange={setDateData}/>                
-                    </div>
-                  </Form.Group>
-                </Row>
-                {/*HOME address*/}
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    label="Address"
-                    placeholder="home address"
-                    name="homeAddress"
-                    as="textarea"
-                    rows={4}
-                    value={values.homeAddress}
-                    onChange={handleChange}
-                    error={errors.homeAddress}
-                    required
-                  />
-                </Row>
-                {/*passport*/}
-                <Row className="mb-3">
-                  <Form.Group className="position-relative mb-3">
-                    <Form.Label>Upload Passport</Form.Label>
-                    <Form.Control
-                      type="file"
-                      required
-                      name="passport"
-                      onChange={(event) => {
-                        setFieldValue("passport", event.currentTarget.files[0]);
-                      }}                      
-                      isInvalid={errors.passport && (submitCount || values.passport)}
-                      accept=".png, .jpg, .jpeg"
-
-                    />
-                    <Form.Control.Feedback type="invalid" tooltip>
-                      {errors.passport}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Row>
-               
-                {/* profession//expected monthly contribution*/}
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    size={8}
-                    value={values.profession}
-                    onChange={handleChange}
-                    error={errors.profession}
-                    required
-                    label="Profession"
-                    name="profession"
-                  />
-                  <InputBootstrapAddOn
-                    count={submitCount}
-                    size={4}
-                    type="number"
-                    name="monthlyContribution"
-                    label="Monthly Contribution"
-                    value={values.monthlyContribution}
-                    onChange={handleChange}
-                    error={errors.monthlyContribution}
-                    required
-                    step="1000"
-                    addOn="₦"
-                  />
-                </Row>
-                {/* work address*/}
-                <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    label="Work Address" 
-                    name="workAddress"
-                    as="textarea"
-                    rows={4}
-                    value={values.workAddress}
-                    onChange={handleChange}
-                    error={errors.workAddress}
-                    required
-                  />
-                </Row>
-                 {/*NextOfKin*/}
-                 <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    label="Spouse/Next of Kin(Full Name)"
-                    value={values.NextOfKin}
-                    onChange={handleChange}
-                    error={errors.NextOfKin}
-                    name="NextOfKin"
-                    required
-                  />
-                </Row>
-                 {/*NextOfKin*/}
-                 <Row className="mb-3">
-                  <InputBootstrap 
-                    count={submitCount}
-                    label="Spouse/Next of Kin Phone Number"
-                    value={values.NextOfKinPhoneNumber}
-                    onChange={handleChange}
-                    error={errors.NextOfKinPhoneNumber} 
-                    name="NextOfKinPhoneNumber"
-                    required
-                    size={6}
-                  />
-                  <InputBootstrapAddOn
-                    count={submitCount}
-                    type="email"
-                    size={6}
-                    name="NextOfKinEmail"
-                    placeholder="name@example.com"
-                    aria-describedby="inputGroupPrepend"
-                    value={values.NextOfKinEmail}
-                    onChange={handleChange}
-                    error={errors.NextOfKinEmail}
-                    addOn="@"
-                    label="Spouse/Next of Kin E-mail Address(optional)"
-                  />
-                </Row>
-                <Button type="submit" size='lg' disabled={isLoading} onClick={handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
-                <>{(submitCount > 0 && !isValid) && <span style={{textAlign:"center",display:"block",}} className="text-danger my-2">please check for any errors before you submit</span>}</>
-              </Form>
-            )}
-          </Formik>
+      <Form noValidate method="POST" className="mx-2 p-1 form">
+        {Object.keys(formNameObj).map(rows=>(
+          <Row key={rows} className="mb-3">
+            {formNameObj[rows].map((formInput,index)=>{
+              const InputType = formInput.component ?? InputBootstrap
+              const updatedFormInput = {...formInput}
+              delete updatedFormInput.component
+              return(
+                <InputType
+                  key={formInput.name+index}
+                  submitCount={formikProps.submitCount}
+                  value={formikProps.values[formInput.name]}
+                  onChange={formInput.onChange??formikProps.handleChange}
+                  error={formikProps.errors[formInput.name]}
+                  required={formInput.required ?? true}
+                  {...updatedFormInput}
+                />
+              )
+            })}
+          </Row>
+        ))}
+        {/* <input type="date" name="date-test" value={dateData} onChange={changeDate}/> */}
+        <OptionalInfo/>
+        <Button type="submit" size='lg' disabled={isLoading} onClick={formikProps.handleSubmit}>{isLoading?'Loading...':'Submit'}</Button>
+        <>{(formikProps.submitCount > 0 && !formikProps.isValid) && <span style={{textAlign:"center",display:"block",}} className="text-danger my-2">please check for any errors before you submit</span>}</>
+      </Form>
     )
   }
+  const FormikForm = ()=>(
+    <Formik
+      validationSchema={schema}
+      onSubmit={submitForm}
+      initialValues={initialFormValues}
+    >
+      <FormBody/>
+    </Formik>
+  )
+  
   const Submitted = ()=>{
     return(
       <>
         <div>
-          <h1 style={{fontWeight:600}}className="display-3 text-success">Thank for submitting your form has been sent</h1>
+          <h1 style={{fontWeight:600}}className="display-3 text-success">Thank you for submitting, your form has been sent.</h1>
         </div>
       </>
     )
@@ -474,11 +279,11 @@ export default function Home() {
         <meta name="theme-color" content="#0001fc"></meta>
       </Head>
       <section >
+        
         <div className="container" ref={animateParent} >
           <FormHeader/>
-          <button className='btn btn-dark' onClick={()=>setIsSubmitted(!isSubmitted)}>change</button>
           {isSubmitted ? <Submitted/>:<FormikForm/>}
-          <DisplayToast/>
+          <DisplayToast show={toastData.show} message={toastData.message} close={()=>closeToast(setLoading,false)}/>
         </div>
         <img
           className='bottom-waves'
